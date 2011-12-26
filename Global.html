@@ -1,0 +1,111 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<title>Block Domains</title>
+<script type="text/javascript">
+function blockDomain(){
+  event.target.page.dispatchMessage("theBlock", "blocked")
+}
+
+
+// second function call
+function respondToMessage(theMessageEvent) {
+  if(theMessageEvent.name === "calcThis"){
+    var startVal=theMessageEvent.message;
+    bigCalc(startVal, theMessageEvent);
+  }
+  if (theMessageEvent.name === "blockThis"){
+    //theMessageEvent.message.style.background = "red";
+    blockDomain('test', theMessageEvent);
+  }
+}
+
+
+/******************************
+Command Functions
+******************************/
+
+function validateCommand(event){
+  if (event.command === "block-domain"){
+    //pass
+  }
+}
+
+
+safari.application.addEventListener("contextmenu", handleContextMenu, false);
+ 
+function handleContextMenu(event) {
+   if (event.userInfo === "IMG") {
+     event.contextMenu.appendContextMenuItem("enlarge", "Enlarge Item");
+    }
+}
+
+
+ 
+// message handling
+safari.application.addEventListener("message", respondToMessage, false);
+
+// interaction with the context/command menu
+//safari.application.addEventListener("command", performCommand, false)
+safari.application.addEventListener("validate", validateCommand, false)
+
+
+
+
+
+
+/*****************************
+Apple demo
+
+
+li.g
+  div.vsc
+    h3.r
+      a.l
+*****************************/
+
+// Register for the contextmenu event in the application layer.
+safari.application.addEventListener("contextmenu", handleContextMenu, false);
+// Register for the command event to perform the context menu item's action when it is clicked.
+safari.application.addEventListener("command", handleCommand, false);
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// append a context menu when appropriate
+function handleContextMenu(event){
+  // preliminary check to make sure we're grabbing a link with an "l" ("L") class
+  if (event.userInfo && event.userInfo.tagName !== "A" && event.userInfo.className !== "l"){
+    return;
+  }
+  event.contextMenu.appendContextMenuItem("block-domain", "Block Domain from Search Results");
+}
+
+// handle the command
+function handleCommand(event){
+  if (event.command !== "block-domain")
+    return;
+  // block the domain
+  safari.application.activeBrowserWindow.activeTab.page.dispatchMessage("block-domain");
+}
+</script>
+</head>
+<body>
+</body>
+</html>
