@@ -2,7 +2,13 @@
 <html>
 <head>
 <title>Block Domains</title>
+<script type="text/javascript" src="./Scripts/jquery-1.7.1.min.js"></script>
+</head>
 <script type="text/javascript">
+
+
+var block_list = safari.extension.settings.blocked_domains;
+
 function blockDomain(){
   event.target.page.dispatchMessage("theBlock", "blocked")
 }
@@ -72,26 +78,10 @@ safari.application.addEventListener("command", handleCommand, false);
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // append a context menu when appropriate
 function handleContextMenu(event){
   // preliminary check to make sure we're grabbing a link with an "l" ("L") class
-  if (event.userInfo && event.userInfo.tagName !== "A" && event.userInfo.className !== "l"){
+  if (event.userInfo && event.userInfo.tagName !== "A"){
     return;
   }
   event.contextMenu.appendContextMenuItem("block-domain", "Block Domain from Search Results");
@@ -104,6 +94,7 @@ function handleCommand(event){
   // block the domain
   safari.application.activeBrowserWindow.activeTab.page.dispatchMessage("block-domain");
 }
+
 </script>
 </head>
 <body>
