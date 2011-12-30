@@ -22,183 +22,156 @@ function handleMessage(msgEvent) {
 */
 //var initialVal=1;
 //var calculatedVal=0;
-var clickedLink;
-var domainToBlock;
-//var block_list = safari.extension.settings.block_list;
-
-//var html = document.getElementsByTagName('html')[0].innerHTML;
- 
-// first function call
-//function doBigCalc(theData) {
-//  safari.self.tab.dispatchMessage("calcThis",theData);
-//}
-
-// pass the page HTML over to the Global.html file
-//function passHTML(theData, theActiveElement){
-  //document.activeElement.style.background = "red";
-  //alert(document.activeElement.tagName)
-  //alert(document.activeElement.id)
-//  safari.self.tab.dispatchMessage("blockThis", theData);
-//}
+var clicked_link;
+var domain_to_block;
 
 
-
-
-// last function call
-//function getAnswer(theMessageEvent) {
-// if (theMessageEvent.name === "theAnswer") {
-//  calculatedVal=theMessageEvent.message;
-//  console.log(calculatedVal);
-// }
- //if (theMessageEvent.name === "theBlock"){
-//   console.log(theMessageEvent.message);
-// }
-//}
-
-
-// listener
-//safari.self.addEventListener("message", getAnswer, false);
-
-//doBigCalc(initialVal);
-//passHTML(html);
-
-// start off by calling our function(s)
-//doBigCalc(initialVal);
-
-
-
-function get_hostname(url){
-  return url.match(/:\/\/(www\.)?(.[^/:]+)/)[2];
-  //return url.match(/:\/\/(.[^/]+)/)[1];
+// from here: http://beardscratchers.com/journal/using-javascript-to-get-the-hostname-of-a-url
+String.prototype.getHostname = function() {
+  var re = new RegExp('^(?:f|ht)tp(?:s)?\://([^/]+)', 'im');
+  return this.match(re)[1].toString();
 }
-
 
 // Register for the contextmenu event.
 document.addEventListener("contextmenu", handleContextMenu, false);
 // Register for the message event.
 safari.self.addEventListener("message", handleMessage, false);
 
+// function to normalize the url, grab the hostname, and get 
+// rid of the google click tracker BS for clicked elements
+function normalizeURL(url){
+  url = url.toString();
+  // google click tracker BS
+  if (url.getHostname() == 'www.google.com'){
+    // get the real URL
+    url = unescape(url.match(/[?&]url=([^&$]*)/i)[1]);
+    domain = url.getHostname();
+  }
+  else{
+    // normal URL, so no change
+    domain = url.getHostname();
+  }
 
-// strip the google click tracker BS
-function de_google(url){
-  var url_string = new String(url)
-  //var urlRegEx = new RegExp("[?&]url=([^&$]*)", "i")
-  var match = url_string.match(/[?&]url=([^&$]*)/i);
-  //console.log("FULL MATCH: " + unescape(match));
-  console.log("MATCH: " + unescape(match[1]));
-  //if (!match[1]){
-    url = unescape(match[1]);
-  //}
-  return get_hostname(url);
+  return [url, domain];
 }
 
 
 //context menu
 function handleContextMenu(event){
-  clickedLink = event.target;
-  domainToBlock = event.target.href;
-
-  // parse the real URL out of the google string. stupid click tracker.
-  if (get_hostname(domainToBlock) == 'google.com'){
-    console.log("PRE-CHECKING DOMAIN NAME TO BLOCK");
-    domainToBlock = de_google(domainToBlock);
+  console.log("Injected.js: handleContextMenu");
+  targetLink = event.target;
+  // google search result titles which contain a word in the search string 
+  // add EM tags around the exact title matches
+  if (event.target.tagName == "EM"){
+    targetLink = event.target.parentElement;
   }
 
-  // passing data back
+  domainToBlock = normalizeURL(targetLink.href)[1];
+
+  // not actually passing the extra event.userInfo anywhere, yet, but might
+  //   add a check to ignore certain elements
   safari.self.tab.setContextMenuEventUserInfo(event,{
-      "tagName": event.target.tagName, 
-      "className": event.target.className,
-      "href": domainToBlock,
-      "parentTagName": event.target.parentElement.tagName,
-      "parentClassName": event.target.parentElement.className,
-      "deleteNode": event.target.parentElement.parentElement.parentElement.id
+      "tagName": targetLink.tagName, 
+      "className": targetLink.className,
+      "blockedDomain": domainToBlock,
+      "parentTagName": targetLink.parentElement.tagName,
+      "parentClassName": targetLink.parentElement.className,
+      "deleteNode": targetLink.parentElement.parentElement.parentElement.id
     }
   );
 }
  
 function handleMessage(event){
+  console.log("Injected.js: handleMessage");
+
   // Always check the name of the message that you want to handle.
   if (event.name !== "block-domain")
       return;
   
-  if (!clickedLink)
+  if (!targetLink)
       return;
 
-  // delete all similar results from current page
-  //clickedLink.parentElement.parentElement.parentElement.style.backgroundColor = "red";
-  //block_list = block_list + "*." + domainToBlock + ";";
-
-
-
-  /******************************
-  Add the domain to our personal block list
-  ******************************/
-  // need to use some type of local storage here.
-
+  confirm_block = confirm("Block " + domainToBlock + "?");
+  if (confirm_block){
+    localStorage.setItem(domainToBlock);
+    blockDomains();
+  }
+  else{
+    return;
+  }
 
   /******************************
   Hide all of the blocked items on this page
   ******************************/
+  /*
   // div#ires is the container for the first OL item
   var ol = document.getElementById('ires').firstElementChild;
   // get our li items
   var li = ol.getElementsByTagName('li');
   //console.log(li);
 
-  //alert(de_google(list[2].firstElementChild.firstElementChild.firstElementChild))
-  console.log("DOMAIN TO BLOCK: " + domainToBlock);
+  //console.log("DOMAIN TO BLOCK: " + domain_to_block);
 
-  /*
-li.g
-  div.vsc
-    h3.r
-      a.l
-  */
+  
   for (item in li){
-    if (li[item].className == "g"){  // only grab the search results DIV, skip the news
+    // only grab the search results DIV, skip the news
+    if (li[item].className == "g" && li[item].id != "newsbox"){
       //alert(li[item].firstElementChild.firstElementChild.innerHTML);
-      var link = li[item].firstElementChild.firstElementChild;  // handle for the actual link
-      var url = de_google(link.firstElementChild);  // actual URL
+      var linkHandle = li[item].firstElementChild.firstElementChild;  // handle for the actual link
+      var testURL = normalizeURL(linkHandle.firstElementChild)[0];  // actual URL
+      var test_domain = normalizeURL(linkHandle.firstElementChild)[1];  // actual domain
+
+      // Add the domain to our personal block list
+      localStorage.setItem(test_domain)
+
+      // Then block everything in the list
+      block_domains();
+
+      // then loop thru all of the blocked domains
+
+      //if (test_domain == domain_to_block){
+      //  block_result(linkHandle);
+      //};
     }
-    
-    
-    //var url = de_google(link.firstElementChild)
-    //console.log("URL:  " + url)
-    //if (url == domainToBlock){
-    //  block_result(link)
-    //}
   }
-
-
-
-  //alert(doc.innerHTML);
-  //for (var i in doc){
-  //  alert(i);
-  //}
-  //alert(Object.inspect(doc));
-  //for (index in document.getElementById('ires')[0]){
-  //  alert(index);
-  //}
-  //jQuery('li.g>div.vsc>h3.r>a.l').each(function(index){
-  //  alert(index);
-  //});
-
-  
-
-  //clickedLink.parentElement.parentElement.parentElement.innerHTML = "<div>blocked</div>"
-
-  // add to database
-
-
-  
-  clickedLink = null;
+  */
+  targetLink = null;
 }
 
-function block_result(link){
+function blockResult(link){
   //console.log(link.innerHTML);
-  link.parentElement.parentElement.style.backgroundColor = "red";
+  //link.parentElement.parentElement.style.backgroundColor = "red";
+  link.parentElement.parentElement.style.display = "none";
   //link.parentElement.parentElement.parentElement.innerHTML = "</div>blocked</div>";
 }
-function blockPage(){
-  
+
+// this function is called twice:
+// page load: all previously blocked domains are removed;
+// after blocking a domain: the blocked domain is added to the list,
+//   then the list is refreshed
+
+/*
+function blockDomains(){
+  var ol = document.getElementById('ires').firstElementChild;
+  var li = ol.getElementsByTagName('li');
+  for (item in li){
+    // only grab the search results DIV, skip the news
+    if (li[item].className == "g" && li[item].id != "newsbox"){
+      var linkHandle = li[item].firstElementChild.firstElementChild;  // handle for the actual link
+      var testURL = normalizeURL(linkHandle.firstElementChild)[0];  // actual URL
+      var testDomain = normalizeURL(linkHandle.firstElementChild)[1];  // actual domain
+
+      // loop thru our localStorage items and block results from our blocklist
+      for (var i=0; i < localStorage.length; i++) {
+        if (testDomain == localStorage.key(i)){
+          blockResult(linkHandle);  
+        }
+      };
+    }
+  }
 }
+*/
+// called on page load
+
+safari.self.tab.dispatchMessage("heyExtensionBar","Klaatu barada nikto");
+//blockDomains();

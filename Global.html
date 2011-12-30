@@ -5,14 +5,11 @@
 <script type="text/javascript" src="./Scripts/jquery-1.7.1.min.js"></script>
 </head>
 <script type="text/javascript">
-
-
 var block_list = safari.extension.settings.blocked_domains;
 
 function blockDomain(){
   event.target.page.dispatchMessage("theBlock", "blocked")
 }
-
 
 // second function call
 function respondToMessage(theMessageEvent) {
@@ -30,7 +27,7 @@ function respondToMessage(theMessageEvent) {
 /******************************
 Command Functions
 ******************************/
-
+/*
 function validateCommand(event){
   if (event.command === "block-domain"){
     //pass
@@ -56,24 +53,15 @@ safari.application.addEventListener("message", respondToMessage, false);
 safari.application.addEventListener("validate", validateCommand, false)
 
 
+*/
 
 
 
-
-/*****************************
-Apple demo
-
-
-li.g
-  div.vsc
-    h3.r
-      a.l
-*****************************/
-
+// was safari.application
 // Register for the contextmenu event in the application layer.
-safari.application.addEventListener("contextmenu", handleContextMenu, false);
+safari.application.activeBrowserWindow.activeTab.addEventListener("contextmenu", handleContextMenu, false);
 // Register for the command event to perform the context menu item's action when it is clicked.
-safari.application.addEventListener("command", handleCommand, false);
+safari.application.activeBrowserWindow.activeTab.addEventListener("command", handleCommand, false);
  
 
 
@@ -93,6 +81,26 @@ function handleCommand(event){
     return;
   // block the domain
   safari.application.activeBrowserWindow.activeTab.page.dispatchMessage("block-domain");
+}
+
+function blockDomains(){
+  var ol = document.getElementById('ires').firstElementChild;
+  var li = ol.getElementsByTagName('li');
+  for (item in li){
+    // only grab the search results DIV, skip the news
+    if (li[item].className == "g" && li[item].id != "newsbox"){
+      var linkHandle = li[item].firstElementChild.firstElementChild;  // handle for the actual link
+      var testURL = normalizeURL(linkHandle.firstElementChild)[0];  // actual URL
+      var testDomain = normalizeURL(linkHandle.firstElementChild)[1];  // actual domain
+
+      // loop thru our localStorage items and block results from our blocklist
+      for (var i=0; i < localStorage.length; i++) {
+        if (testDomain == localStorage.key(i)){
+          blockResult(linkHandle);  
+        }
+      };
+    }
+  }
 }
 
 </script>
