@@ -1,11 +1,11 @@
 .nubilus-result-blocked{
-  
+  display:none;
   color:blue;
-  background-color:red;
+  background-color:#faa;
 }
 .nubilus-result-unblocked{
   display:block;
-  background-color:#faa;
+  background-color:transparent;
   color:blue;
 }
 .nubilus-block-me{

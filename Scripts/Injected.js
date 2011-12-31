@@ -2,17 +2,23 @@ blockedContent = [];
 
 // first we block all of the existing results
 function blockSearchResults(){
-  var searchResults = document.getElementById('ires').firstElementChild;
-  var siteResults = searchResults.getElementsByTagName('cite');
-  for (var i=0; i<siteResults.length; i++){
-    resultHandle = siteResults[i];
-    result = siteResults[i].innerText.match(/([^/]+)/i)[1];
-    for (var j=0; j<localStorage.length; j++){
-      domain = localStorage.key(j);
-      if (domain == result){
-        blockContent(resultHandle);
+  try{
+    var searchResults = document.getElementById('ires').firstElementChild;
+    var siteResults = searchResults.getElementsByTagName('cite');
+    for (var i=0; i<siteResults.length; i++){
+      resultHandle = siteResults[i];
+      result = siteResults[i].innerText.match(/([^/]+)/i)[1];
+      for (var j=0; j<localStorage.length; j++){
+        domain = localStorage.key(j);
+        if (domain == result){
+          blockContent(resultHandle);
+        }
       }
-    }
+    }    
+    addBlockMessages();
+  }
+  catch(err){
+
   }
 }
 
@@ -30,26 +36,23 @@ function addBlockMessages(){
     parentList = result.parentElement.parentElement.parentElement.parentElement;
     blockURL = result.innerText.match(/([^/]+)/i)[1];  // URL to block
     
-
-    
-      
-    if (siteResults[i].getElementsByClassName('nubilus-block-me')){
-      blockMessage = document.createElement('a');
-      result.appendChild(blockMessage);
+    if (siteResults[i].getElementsByClassName('nubilus-block-me').length > 0){
+      blockMessage = siteResults[i].getElementsByClassName('nubilus-block-me')[0]
     }
     else{
-      blockMessage = siteResults[i].getElementsByClassName('nubilus-block-me')[0]
+      blockMessage = document.createElement('a');
+      result.appendChild(blockMessage);
     }
 
     // already been blocked, so create our unblock message
     if (parentList.classList.contains("nubilus-result-blocked")){
-      blockMessage.textContent = "- Unblock " + blockURL; //normalizeURL(result.innerText) + "?"
+      blockMessage.textContent = "- Unblock " + blockURL;
       blockMessage.removeEventListener("click", blockContent, true);
       blockMessage.addEventListener("click", unblockContent, true);
     }
     // not blocked, create our block message
     else {
-      blockMessage.textContent = "- Block " + blockURL; //normalizeURL(result.innerText) + "?"
+      blockMessage.textContent = "- Block " + blockURL;
       blockMessage.removeEventListener("click", unblockContent, true);
       blockMessage.addEventListener("click", blockContent, true);
     }
@@ -74,19 +77,24 @@ function blockContent(element){
     addToLocalStorage(element.getAttribute("data-source"));
   }
   // remove the blockContent listener, because the content is already blocked
-  element.parentElement.parentElement.parentElement.parentElement.classList.add("nubilus-result-blocked");
-  element.parentElement.parentElement.parentElement.parentElement.classList.remove("nubilus-result-unblocked");
-
+  var parentList = element.parentElement.parentElement.parentElement.parentElement;
+  // for some reason, blocking picks up a DIV
+  if (parentList.tagName == "DIV"){
+    parentList = parentList.parentElement;
+  }
+  parentList.classList.add("nubilus-result-blocked");
+  parentList.classList.remove("nubilus-result-unblocked");
+  parentList.style.display = "none";  // manual display, since that's how we active the temporary show
   //element.removeEventListener("click", blockContent, true);
   
   // block the result
   //blockResult(element.parentElement.parentElement.parentElement.parentElement)
-  blockedContent.push(element);  // not sure what we're doing with this data yet, but add it
+  //blockedContent.push(element);  // not sure what we're doing with this data yet, but add it
 
   // refresh the page to make sure we've added our disclaimer at the bottom
-  if (element.constructor === MouseEvent){
+  //if (element.constructor == MouseEvent){
     addBlockMessages();
-  }
+  //}
 
 }
 
@@ -101,40 +109,15 @@ function unblockContent(event){
   removeFromLocalStorage(element.getAttribute("data-source"));
   // block the result
   //unblockResult(element.parentElement.parentElement.parentElement.parentElement.parentElement)
-
-  element.parentElement.parentElement.parentElement.parentElement.parentElement.classList.remove("nubilus-result-blocked");
-  element.parentElement.parentElement.parentElement.parentElement.parentElement.classList.add("nubilus-result-unblocked");
-
+  var parentList = element.parentElement.parentElement.parentElement.parentElement.parentElement;
+  parentList.classList.remove("nubilus-result-blocked");
+  parentList.classList.add("nubilus-result-unblocked");
   addBlockMessages();
 }
 
-function __deprecatedaddUnblockMessages(event){
-  return;
-  var blockedElements = document.getElementsByClassName('nubilus-result-blocked');
-  for (var i=0; i<blockedElements.length; i++){
-    //blockedElements[i].classList.add("nubilus-result-unblocked");
-    //console.log(blockedElements[i].innerHTML);
-    replace = blockedElements[i].getElementsByClassName("nubilus-block-me")[0];  // should only be one of these
-
-    // create a new anchor element for our unblock link
-    replace.textContent = "- Unblock " + replace.getAttribute('data-source');
-    //anchor.classList.add("nubilus-block-me");
-    //replace.setAttribute("data-source", replace.getAttribute('data-source');
-
-    // remove the old event
-    replace.removeEventListener("click", blockContent, true);
-    // add a new event
-    replace.addEventListener("click", unblockContent, true);
-
-    //replace.innerHTML = "<a href=''>Unblock "+replace.getAttribute('data-source')+"</a>";
-    //replace.addEventListener("click", unblockContent, true);
-    //console.log("Unblocking " + blockedElements.innerHTML);
-  }
-  //document.getElementById("nubilus_block_box").style.display = "none";
+function d(m){
+  console.log(m)
 }
-
-
-
 
 
 // add a blocked domain to local storage
@@ -186,32 +169,43 @@ function normalizeURL(url){
   return [url, domain];
 }
 
-function __blockResult(element){
-  element.classList.add("nubilus-result-blocked");
-  element.classList.remove("nubilus-result-unblocked");
-}
-
-function __unblockResult(element){
-  element.classList.remove("nubilus-result-blocked");
-  element.classList.add("nubilus-result-unblocked");
-}
-
-
 // does a simple check to see if we need a trigger to allow unblocking
 function checkBlockedContent(){
-  if (blockedContent.length > 0 && (document.getElementById('nubilus-block-box'))){
-    searchResults = document.getElementById('ires');
-    blockBox = document.createElement('a');
+  // attempt to remove any existing info box if no results are blocked
+  if (document.getElementsByClassName('nubilus-result-blocked').length == 0){
+    try{
+      parent = document.getElementById('ires');
+      child = document.getElementById('nubilus-block-box');
+      parent.removeChild(child);  
+    }
+    catch(err){
+      // fails silently in the corner
+    }
+  }
+  else{
+    if (document.getElementById('nubilus-block-box')){
+      
+    }
+    else{
+      blockBox = document.createElement('a');
+      blockBox.setAttribute("id", "nubilus-block-box");
+      document.getElementById('ires').appendChild(blockBox)
+      //document.getElementById('nubilus-block-box')
+    }
+    searchResults = document.getElementById('nubilus-block-box');
     blockBox.classList.add("nubilus-block-box");
     blockBox.textContent = "Your personal blocklist blocked some results. Click this box to view your blocked results.";
-    blockBox.itemId = "nubilus-block-box";
-    searchResults.appendChild(blockBox)
-    //blockBox.addEventListener("click", addUnblockMessages, true);
+    blockBox.addEventListener("click", displayBlockedResults, true);
+  }
+}
+
+function displayBlockedResults(){
+  var blockedResults = document.getElementsByClassName('nubilus-result-blocked');
+  for (var i=0; i<blockedResults.length; i++){
+    blockedResults[i].style.display = "block";
   }
 }
 
 
 
 blockSearchResults();
-addBlockMessages();
-checkBlockedContent();
