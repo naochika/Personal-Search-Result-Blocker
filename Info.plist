@@ -7,19 +7,19 @@
 	<key>Builder Version</key>
 	<string>7534.52.7</string>
 	<key>CFBundleDisplayName</key>
-	<string>Personal Blocklist</string>
+	<string>Personal Search Result Blocker</string>
 	<key>CFBundleIdentifier</key>
 	<string>us.nubil.block</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.0</string>
+	<string>1.1</string>
 	<key>CFBundleVersion</key>
 	<string>1</string>
 	<key>Chrome</key>
 	<dict>
-		<key>Global Page</key>
-		<string>Global.html</string>
+		<key>Database Quota</key>
+		<real>10485760</real>
 	</dict>
 	<key>Content</key>
 	<dict>
@@ -32,7 +32,7 @@
 		</dict>
 		<key>Stylesheets</key>
 		<array>
-			<string>Style.css</string>
+			<string>Styles/Default.css</string>
 		</array>
 	</dict>
 	<key>Description</key>

@@ -1,5 +1,3 @@
-blockedContent = [];
-
 // first we block all of the existing results
 function blockSearchResults(){
   try{
@@ -18,13 +16,10 @@ function blockSearchResults(){
     addBlockMessages();
   }
   catch(err){
-
+    // nothing to see here. yet.
   }
 }
 
-///var theEvent = document.createEvent('MouseEvents');
-//      theEvent.initEvent('click', true, true);
-//      theTarget.dispatchEvent(theEvent);
 
 // next, we add a block option to each remaining result
 function addBlockMessages(){
@@ -32,10 +27,16 @@ function addBlockMessages(){
   var siteResults = searchResults.getElementsByTagName('cite');
   for (var i=0; i<siteResults.length; i++){
     result = siteResults[i];
-    // this should be the parent element a few nodes up which contains our blocking data
+    /*
+      this should be the parent element a few nodes up
+
+      this element will hold the custom css class we use to determine whether an
+      element was blocked or not.
+    */
     parentList = result.parentElement.parentElement.parentElement.parentElement;
     blockURL = result.innerText.match(/([^/]+)/i)[1];  // URL to block
     
+    // check if we've already created a "Block [site]" message, if so overwrite
     if (siteResults[i].getElementsByClassName('nubilus-block-me').length > 0){
       blockMessage = siteResults[i].getElementsByClassName('nubilus-block-me')[0]
     }
@@ -98,8 +99,6 @@ function blockContent(element){
 
 }
 
-
-
 // unblocks already blocked content
 function unblockContent(event){
   const element = event.target;
@@ -114,11 +113,6 @@ function unblockContent(event){
   parentList.classList.add("nubilus-result-unblocked");
   addBlockMessages();
 }
-
-function d(m){
-  console.log(m)
-}
-
 
 // add a blocked domain to local storage
 function addToLocalStorage(domain){
@@ -136,14 +130,27 @@ function addToLocalStorage(domain){
 
 // remove an item from local storage
 function removeFromLocalStorage(domain){
+  // stringify and parse
+  // indexOf
+  var blockList = JSON.parse(localStorage.getItem('blocked'));
+  if (blockList.indexOf(domain) > -1){
+    blockList.splice(indexOf(domain), 1);
+  }
+  localStorage.setItem('blocked', JSON.stringify(blockList);
+  /*
   for (var i = 0; i < localStorage.length; i++){
     if (domain == localStorage.key(i)){
       localStorage.removeItem(localStorage.key(i))
     }
   }
+  */
 }
 
-
+// reset all of our localStorage settings
+function resetLocalStorage(){
+  localStorage.setItem('blocked', JSON.stringify([]));
+  localStorage.setItem('reset', JSON.stringify(false));
+}
 
 // from here: http://beardscratchers.com/journal/using-javascript-to-get-the-hostname-of-a-url
 String.prototype.getHostname = function() {
@@ -165,7 +172,6 @@ function normalizeURL(url){
     // normal URL, so no change
     domain = url.getHostname();
   }
-
   return [url, domain];
 }
 
@@ -184,9 +190,9 @@ function checkBlockedContent(){
   }
   else{
     if (document.getElementById('nubilus-block-box')){
-      
+      // nothing to see here. yet. maybe       
     }
-    else{
+    else{  // create a block box with data
       blockBox = document.createElement('a');
       blockBox.setAttribute("id", "nubilus-block-box");
       document.getElementById('ires').appendChild(blockBox)
@@ -194,7 +200,7 @@ function checkBlockedContent(){
     }
     searchResults = document.getElementById('nubilus-block-box');
     blockBox.classList.add("nubilus-block-box");
-    blockBox.textContent = "Your personal blocklist blocked some results. Click this box to view your blocked results.";
+    blockBox.textContent = "Your personal blocklist blocked some results. Click this text to view or edit your blocked results.";
     blockBox.addEventListener("click", displayBlockedResults, true);
   }
 }
@@ -205,7 +211,5 @@ function displayBlockedResults(){
     blockedResults[i].style.display = "block";
   }
 }
-
-
 
 blockSearchResults();
