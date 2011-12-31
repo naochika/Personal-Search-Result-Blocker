@@ -1,0 +1,28 @@
+.nubilus-result-blocked{
+  
+  color:blue;
+  background-color:red;
+}
+.nubilus-result-unblocked{
+  display:block;
+  background-color:#faa;
+  color:blue;
+}
+.nubilus-block-me{
+  padding-left:10px;
+  display:inline;
+  color:blue;
+  overflow:visible;
+  color:blue;
+}
+.nubilus-block-me:hover{
+  text-decoration:underline;
+  color:blue;
+}
+a.nubilus-block-box{
+  display:block;
+  margin:1em;
+  margin-bottom:20px;
+  color:blue;
+  overflow:visible;
+}

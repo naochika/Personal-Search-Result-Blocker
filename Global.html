@@ -5,7 +5,37 @@
 <script type="text/javascript" src="./Scripts/jquery-1.7.1.min.js"></script>
 </head>
 <script type="text/javascript">
-var block_list = safari.extension.settings.blocked_domains;
+//var block_list = safari.extension.settings.blocked_domains;
+
+
+function blockExisting(){
+  //alert('blocked!');
+}
+
+function addBlockMessage(){
+  //alert('block message!');
+  //var ol = document.getElementById('ires').firstElementChild;
+  document.style.backgroundColor = "red";
+
+  /*
+  var li = ol.getElementsByTagName('li');
+  for (item in li){
+    // only grab the search results DIV, skip the news
+    if (li[item].className == "g" && li[item].id != "newsbox"){
+      var linkHandle = li[item].firstElementChild.firstElementChild;  // handle for the actual link
+      var testURL = normalizeURL(linkHandle.firstElementChild)[0];  // actual URL
+      var testDomain = normalizeURL(linkHandle.firstElementChild)[1];  // actual domain
+
+      // loop thru our localStorage items and block results from our blocklist
+      for (var i=0; i < localStorage.length; i++) {
+        if (testDomain == localStorage.key(i)){
+          blockResult(linkHandle);  
+        }
+      };
+    }
+  }
+  */
+}
 
 function blockDomain(){
   event.target.page.dispatchMessage("theBlock", "blocked")
@@ -13,15 +43,21 @@ function blockDomain(){
 
 // second function call
 function respondToMessage(theMessageEvent) {
-  if(theMessageEvent.name === "calcThis"){
-    var startVal=theMessageEvent.message;
-    bigCalc(startVal, theMessageEvent);
+  if(theMessageEvent.name === "blockExisting"){
+    blockExisting(theMessageEvent);
+    // here is where I call my other Global.html function
+    //var startVal=theMessageEvent.message;
+    //bigCalc(startVal, theMessageEvent);
   }
-  if (theMessageEvent.name === "blockThis"){
-    //theMessageEvent.message.style.background = "red";
-    blockDomain('test', theMessageEvent);
+  if(theMessageEvent.name === "addBlockMessage"){
+    addBlockMessage(theMessageEvent);
   }
+  
 }
+
+safari.application.addEventListener("message", respondToMessage, false);
+
+
 
 
 /******************************
@@ -57,6 +93,7 @@ safari.application.addEventListener("validate", validateCommand, false)
 
 
 
+
 // was safari.application
 // Register for the contextmenu event in the application layer.
 safari.application.activeBrowserWindow.activeTab.addEventListener("contextmenu", handleContextMenu, false);
@@ -83,6 +120,8 @@ function handleCommand(event){
   safari.application.activeBrowserWindow.activeTab.page.dispatchMessage("block-domain");
 }
 
+
+
 function blockDomains(){
   var ol = document.getElementById('ires').firstElementChild;
   var li = ol.getElementsByTagName('li');
@@ -102,6 +141,29 @@ function blockDomains(){
     }
   }
 }
+
+/* Apple Demo
+
+<!--
+function bigCalc(startVal, event) {
+   //imagine hundreds of lines of code here...
+   endVal = startVal + 2;
+   //return to sender
+   event.target.page.dispatchMessage("theAnswer", endVal);
+}
+ 
+function respondToMessage(theMessageEvent) {
+    if(theMessageEvent.name === "calcThis")
+    {
+       var startVal=theMessageEvent.message;
+       bigCalc(startVal, theMessageEvent);
+    }
+}
+ 
+    safari.application.addEventListener("message",respondToMessage,false);
+-->
+
+*/
 
 </script>
 </head>

@@ -1,29 +1,165 @@
-//var x = "this is some text";
-//var x = document.getElementsByTagName('html')[0].innerHTML
+blockedContent = [];
 
-//function change_color(){
-//  document.body.style.background = "red";
-//}
-
-
-/*
-function handleMessage(msgEvent) {
-  var messageName = msgEvent.name;
-  var messageData = msgEvent.message;
-  if (messageName === "activateMyScript"){
-    if (messageData === "block_domain"){
-      alert('blocking domain');
-    }
-    if (messageData === "start"){
-      startIt();
+// first we block all of the existing results
+function blockSearchResults(){
+  var searchResults = document.getElementById('ires').firstElementChild;
+  var siteResults = searchResults.getElementsByTagName('cite');
+  for (var i=0; i<siteResults.length; i++){
+    resultHandle = siteResults[i];
+    result = siteResults[i].innerText.match(/([^/]+)/i)[1];
+    for (var j=0; j<localStorage.length; j++){
+      domain = localStorage.key(j);
+      if (domain == result){
+        blockContent(resultHandle);
+      }
     }
   }
 }
-*/
-//var initialVal=1;
-//var calculatedVal=0;
-var clicked_link;
-var domain_to_block;
+
+///var theEvent = document.createEvent('MouseEvents');
+//      theEvent.initEvent('click', true, true);
+//      theTarget.dispatchEvent(theEvent);
+
+// next, we add a block option to each remaining result
+function addBlockMessages(){
+  var searchResults = document.getElementById('ires').firstElementChild;
+  var siteResults = searchResults.getElementsByTagName('cite');
+  for (var i=0; i<siteResults.length; i++){
+    result = siteResults[i];
+    // this should be the parent element a few nodes up which contains our blocking data
+    parentList = result.parentElement.parentElement.parentElement.parentElement;
+    blockURL = result.innerText.match(/([^/]+)/i)[1];  // URL to block
+    
+
+    
+      
+    if (siteResults[i].getElementsByClassName('nubilus-block-me')){
+      blockMessage = document.createElement('a');
+      result.appendChild(blockMessage);
+    }
+    else{
+      blockMessage = siteResults[i].getElementsByClassName('nubilus-block-me')[0]
+    }
+
+    // already been blocked, so create our unblock message
+    if (parentList.classList.contains("nubilus-result-blocked")){
+      blockMessage.textContent = "- Unblock " + blockURL; //normalizeURL(result.innerText) + "?"
+      blockMessage.removeEventListener("click", blockContent, true);
+      blockMessage.addEventListener("click", unblockContent, true);
+    }
+    // not blocked, create our block message
+    else {
+      blockMessage.textContent = "- Block " + blockURL; //normalizeURL(result.innerText) + "?"
+      blockMessage.removeEventListener("click", unblockContent, true);
+      blockMessage.addEventListener("click", blockContent, true);
+    }
+    blockMessage.classList.add("nubilus-block-me");
+    blockMessage.setAttribute("data-source", blockURL);
+  }
+  checkBlockedContent();
+}
+
+
+
+// adds our blocked domain to local storage and passes the
+//   appropriate domain off to the blocker.
+function blockContent(element){
+  // hacky. i could split this up into 2 functions but i'd prefer to figure out
+  //   how to trigger a mouse event from block search
+  // this is triggered only by manual blocking
+  if (element.constructor === MouseEvent){
+    // when our element is not an element, make it an element
+    const element = element.target;
+    // add to local storage
+    addToLocalStorage(element.getAttribute("data-source"));
+  }
+  // remove the blockContent listener, because the content is already blocked
+  element.parentElement.parentElement.parentElement.parentElement.classList.add("nubilus-result-blocked");
+  element.parentElement.parentElement.parentElement.parentElement.classList.remove("nubilus-result-unblocked");
+
+  //element.removeEventListener("click", blockContent, true);
+  
+  // block the result
+  //blockResult(element.parentElement.parentElement.parentElement.parentElement)
+  blockedContent.push(element);  // not sure what we're doing with this data yet, but add it
+
+  // refresh the page to make sure we've added our disclaimer at the bottom
+  if (element.constructor === MouseEvent){
+    addBlockMessages();
+  }
+
+}
+
+
+
+// unblocks already blocked content
+function unblockContent(event){
+  const element = event.target;
+  // remove the listener
+  //element.removeEventListener("click", unblockContent, true);
+  // remove from local storage
+  removeFromLocalStorage(element.getAttribute("data-source"));
+  // block the result
+  //unblockResult(element.parentElement.parentElement.parentElement.parentElement.parentElement)
+
+  element.parentElement.parentElement.parentElement.parentElement.parentElement.classList.remove("nubilus-result-blocked");
+  element.parentElement.parentElement.parentElement.parentElement.parentElement.classList.add("nubilus-result-unblocked");
+
+  addBlockMessages();
+}
+
+function __deprecatedaddUnblockMessages(event){
+  return;
+  var blockedElements = document.getElementsByClassName('nubilus-result-blocked');
+  for (var i=0; i<blockedElements.length; i++){
+    //blockedElements[i].classList.add("nubilus-result-unblocked");
+    //console.log(blockedElements[i].innerHTML);
+    replace = blockedElements[i].getElementsByClassName("nubilus-block-me")[0];  // should only be one of these
+
+    // create a new anchor element for our unblock link
+    replace.textContent = "- Unblock " + replace.getAttribute('data-source');
+    //anchor.classList.add("nubilus-block-me");
+    //replace.setAttribute("data-source", replace.getAttribute('data-source');
+
+    // remove the old event
+    replace.removeEventListener("click", blockContent, true);
+    // add a new event
+    replace.addEventListener("click", unblockContent, true);
+
+    //replace.innerHTML = "<a href=''>Unblock "+replace.getAttribute('data-source')+"</a>";
+    //replace.addEventListener("click", unblockContent, true);
+    //console.log("Unblocking " + blockedElements.innerHTML);
+  }
+  //document.getElementById("nubilus_block_box").style.display = "none";
+}
+
+
+
+
+
+// add a blocked domain to local storage
+function addToLocalStorage(domain){
+  var exists = false;
+  for (var i = 0; i < localStorage.length; i++){
+    if (domain == localStorage.key(i)){
+      exists = true;
+    }
+  }
+  // only add to local storage if the domain does not exist
+  if (!exists){
+    localStorage.setItem(domain);
+  }
+}
+
+// remove an item from local storage
+function removeFromLocalStorage(domain){
+  for (var i = 0; i < localStorage.length; i++){
+    if (domain == localStorage.key(i)){
+      localStorage.removeItem(localStorage.key(i))
+    }
+  }
+}
+
 
 
 // from here: http://beardscratchers.com/journal/using-javascript-to-get-the-hostname-of-a-url
@@ -31,11 +167,6 @@ String.prototype.getHostname = function() {
   var re = new RegExp('^(?:f|ht)tp(?:s)?\://([^/]+)', 'im');
   return this.match(re)[1].toString();
 }
-
-// Register for the contextmenu event.
-document.addEventListener("contextmenu", handleContextMenu, false);
-// Register for the message event.
-safari.self.addEventListener("message", handleMessage, false);
 
 // function to normalize the url, grab the hostname, and get 
 // rid of the google click tracker BS for clicked elements
@@ -55,123 +186,32 @@ function normalizeURL(url){
   return [url, domain];
 }
 
-
-//context menu
-function handleContextMenu(event){
-  console.log("Injected.js: handleContextMenu");
-  targetLink = event.target;
-  // google search result titles which contain a word in the search string 
-  // add EM tags around the exact title matches
-  if (event.target.tagName == "EM"){
-    targetLink = event.target.parentElement;
-  }
-
-  domainToBlock = normalizeURL(targetLink.href)[1];
-
-  // not actually passing the extra event.userInfo anywhere, yet, but might
-  //   add a check to ignore certain elements
-  safari.self.tab.setContextMenuEventUserInfo(event,{
-      "tagName": targetLink.tagName, 
-      "className": targetLink.className,
-      "blockedDomain": domainToBlock,
-      "parentTagName": targetLink.parentElement.tagName,
-      "parentClassName": targetLink.parentElement.className,
-      "deleteNode": targetLink.parentElement.parentElement.parentElement.id
-    }
-  );
-}
- 
-function handleMessage(event){
-  console.log("Injected.js: handleMessage");
-
-  // Always check the name of the message that you want to handle.
-  if (event.name !== "block-domain")
-      return;
-  
-  if (!targetLink)
-      return;
-
-  confirm_block = confirm("Block " + domainToBlock + "?");
-  if (confirm_block){
-    localStorage.setItem(domainToBlock);
-    blockDomains();
-  }
-  else{
-    return;
-  }
-
-  /******************************
-  Hide all of the blocked items on this page
-  ******************************/
-  /*
-  // div#ires is the container for the first OL item
-  var ol = document.getElementById('ires').firstElementChild;
-  // get our li items
-  var li = ol.getElementsByTagName('li');
-  //console.log(li);
-
-  //console.log("DOMAIN TO BLOCK: " + domain_to_block);
-
-  
-  for (item in li){
-    // only grab the search results DIV, skip the news
-    if (li[item].className == "g" && li[item].id != "newsbox"){
-      //alert(li[item].firstElementChild.firstElementChild.innerHTML);
-      var linkHandle = li[item].firstElementChild.firstElementChild;  // handle for the actual link
-      var testURL = normalizeURL(linkHandle.firstElementChild)[0];  // actual URL
-      var test_domain = normalizeURL(linkHandle.firstElementChild)[1];  // actual domain
-
-      // Add the domain to our personal block list
-      localStorage.setItem(test_domain)
-
-      // Then block everything in the list
-      block_domains();
-
-      // then loop thru all of the blocked domains
-
-      //if (test_domain == domain_to_block){
-      //  block_result(linkHandle);
-      //};
-    }
-  }
-  */
-  targetLink = null;
+function __blockResult(element){
+  element.classList.add("nubilus-result-blocked");
+  element.classList.remove("nubilus-result-unblocked");
 }
 
-function blockResult(link){
-  //console.log(link.innerHTML);
-  //link.parentElement.parentElement.style.backgroundColor = "red";
-  link.parentElement.parentElement.style.display = "none";
-  //link.parentElement.parentElement.parentElement.innerHTML = "</div>blocked</div>";
+function __unblockResult(element){
+  element.classList.remove("nubilus-result-blocked");
+  element.classList.add("nubilus-result-unblocked");
 }
 
-// this function is called twice:
-// page load: all previously blocked domains are removed;
-// after blocking a domain: the blocked domain is added to the list,
-//   then the list is refreshed
 
-/*
-function blockDomains(){
-  var ol = document.getElementById('ires').firstElementChild;
-  var li = ol.getElementsByTagName('li');
-  for (item in li){
-    // only grab the search results DIV, skip the news
-    if (li[item].className == "g" && li[item].id != "newsbox"){
-      var linkHandle = li[item].firstElementChild.firstElementChild;  // handle for the actual link
-      var testURL = normalizeURL(linkHandle.firstElementChild)[0];  // actual URL
-      var testDomain = normalizeURL(linkHandle.firstElementChild)[1];  // actual domain
-
-      // loop thru our localStorage items and block results from our blocklist
-      for (var i=0; i < localStorage.length; i++) {
-        if (testDomain == localStorage.key(i)){
-          blockResult(linkHandle);  
-        }
-      };
-    }
+// does a simple check to see if we need a trigger to allow unblocking
+function checkBlockedContent(){
+  if (blockedContent.length > 0 && (document.getElementById('nubilus-block-box'))){
+    searchResults = document.getElementById('ires');
+    blockBox = document.createElement('a');
+    blockBox.classList.add("nubilus-block-box");
+    blockBox.textContent = "Your personal blocklist blocked some results. Click this box to view your blocked results.";
+    blockBox.itemId = "nubilus-block-box";
+    searchResults.appendChild(blockBox)
+    //blockBox.addEventListener("click", addUnblockMessages, true);
   }
 }
-*/
-// called on page load
 
-safari.self.tab.dispatchMessage("heyExtensionBar","Klaatu barada nikto");
-//blockDomains();
+
+
+blockSearchResults();
+addBlockMessages();
+checkBlockedContent();

@@ -30,6 +30,10 @@
 				<string>Scripts/Injected.js</string>
 			</array>
 		</dict>
+		<key>Stylesheets</key>
+		<array>
+			<string>Style.css</string>
+		</array>
 	</dict>
 	<key>Description</key>
 	<string>Block Google Search Results in Safari</string>
