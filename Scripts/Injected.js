@@ -1,27 +1,39 @@
-// first we block all of the existing results
+/*
+
+Our Injected.js page:
+
+
+
+*/
+
+/*
+Hides the search results in our block list
+*/
 function blockSearchResults(){
-  try{
-    var searchResults = document.getElementById('ires').firstElementChild;
-    var siteResults = searchResults.getElementsByTagName('cite');
-    for (var i=0; i<siteResults.length; i++){
-      resultHandle = siteResults[i];
-      result = siteResults[i].innerText.match(/([^/]+)/i)[1];
-      for (var j=0; j<localStorage.length; j++){
-        domain = localStorage.key(j);
-        if (domain == result){
-          blockContent(resultHandle);
-        }
-      }
+    try{
+        var searchResults = document.getElementById('ires').firstElementChild;
+        var siteResults = searchResults.getElementsByTagName('cite');
+        for (var i=0; i<siteResults.length; i++){
+            resultHandle = siteResults[i];
+            result = siteResults[i].innerText.match(/([^/ ]+)/i)[1];
+            // open our blocklist up
+            var blockList = JSON.parse(localStorage.getItem('blocked'));
+            // see if the domain exists
+            if (blockList.indexOf(result) > -1)
+            {
+                blockContent(resultHandle);
+            }
     }    
     addBlockMessages();
-  }
-  catch(err){
-    // nothing to see here. yet.
-  }
+    }
+    catch(err){
+    console.log(err);
+    }
 }
 
-
-// next, we add a block option to each remaining result
+/*
+Adds a block message to each search result item
+*/
 function addBlockMessages(){
   var searchResults = document.getElementById('ires').firstElementChild;
   var siteResults = searchResults.getElementsByTagName('cite');
@@ -34,7 +46,7 @@ function addBlockMessages(){
       element was blocked or not.
     */
     parentList = result.parentElement.parentElement.parentElement.parentElement;
-    blockURL = result.innerText.match(/([^/]+)/i)[1];  // URL to block
+    blockURL = result.innerText.match(/([^/ ]+)/i)[1];  // URL to block
     
     // check if we've already created a "Block [site]" message, if so overwrite
     if (siteResults[i].getElementsByClassName('nubilus-block-me').length > 0){
@@ -63,8 +75,6 @@ function addBlockMessages(){
   checkBlockedContent();
 }
 
-
-
 // adds our blocked domain to local storage and passes the
 //   appropriate domain off to the blocker.
 function blockContent(element){
@@ -86,28 +96,15 @@ function blockContent(element){
   parentList.classList.add("nubilus-result-blocked");
   parentList.classList.remove("nubilus-result-unblocked");
   parentList.style.display = "none";  // manual display, since that's how we active the temporary show
-  //element.removeEventListener("click", blockContent, true);
-  
-  // block the result
-  //blockResult(element.parentElement.parentElement.parentElement.parentElement)
-  //blockedContent.push(element);  // not sure what we're doing with this data yet, but add it
-
-  // refresh the page to make sure we've added our disclaimer at the bottom
-  //if (element.constructor == MouseEvent){
-    addBlockMessages();
-  //}
-
+  addBlockMessages();
 }
 
 // unblocks already blocked content
 function unblockContent(event){
   const element = event.target;
-  // remove the listener
-  //element.removeEventListener("click", unblockContent, true);
   // remove from local storage
   removeFromLocalStorage(element.getAttribute("data-source"));
   // block the result
-  //unblockResult(element.parentElement.parentElement.parentElement.parentElement.parentElement)
   var parentList = element.parentElement.parentElement.parentElement.parentElement.parentElement;
   parentList.classList.remove("nubilus-result-blocked");
   parentList.classList.add("nubilus-result-unblocked");
@@ -116,34 +113,20 @@ function unblockContent(event){
 
 // add a blocked domain to local storage
 function addToLocalStorage(domain){
-  var exists = false;
-  for (var i = 0; i < localStorage.length; i++){
-    if (domain == localStorage.key(i)){
-      exists = true;
-    }
+  var blockList = JSON.parse(localStorage.getItem('blocked'))
+  if (blockList.indexOf(domain) == -1){  // domain does not exist in blocklist
+    blockList.push(domain);
   }
-  // only add to local storage if the domain does not exist
-  if (!exists){
-    localStorage.setItem(domain);
-  }
+  localStorage.setItem('blocked', JSON.stringify(blockList))
 }
 
 // remove an item from local storage
 function removeFromLocalStorage(domain){
-  // stringify and parse
-  // indexOf
   var blockList = JSON.parse(localStorage.getItem('blocked'));
   if (blockList.indexOf(domain) > -1){
-    blockList.splice(indexOf(domain), 1);
+    blockList.splice(blockList.indexOf(domain), 1);
   }
-  localStorage.setItem('blocked', JSON.stringify(blockList);
-  /*
-  for (var i = 0; i < localStorage.length; i++){
-    if (domain == localStorage.key(i)){
-      localStorage.removeItem(localStorage.key(i))
-    }
-  }
-  */
+  localStorage.setItem('blocked', JSON.stringify(blockList));
 }
 
 // reset all of our localStorage settings
@@ -212,4 +195,102 @@ function displayBlockedResults(){
   }
 }
 
+// initializes our settings, also used as reset in case of failure
+function checkReset(){
+  try{
+    if (localStorage.getItem('blocked') == null){
+      resetLocalStorage();
+    }
+  }
+  catch(err){
+    resetLocalStorage();
+  }
+}
+
+function handleMessage(msgEvent){
+  var messageName = msgEvent.name;
+  var messageData = msgEvent.message;
+  if (messageName === "resetMessageFromGlobal"){
+    if (messageData === "true"){
+      // reset local Storage;
+      resetLocalStorage();
+    }
+  }
+  if (messageName === "toggleAdsFromGlobal"){
+    if (messageData === true){
+      set('displayAds', true);
+    }
+    else{
+      set('displayAds', false)
+    }
+    displayAds();
+  }
+}
+
+
+
+/*
+  var blockList = JSON.parse(localStorage.getItem('blocked'));
+  if (blockList.indexOf(domain) > -1){
+    blockList.splice(blockList.indexOf(domain), 1);
+  }
+  localStorage.setItem('blocked', JSON.stringify(blockList));
+*/
+
+// toying around with setting a store/unstore function 
+function set(key, value){
+  localStorage.setItem(key, JSON.stringify(value));
+}
+
+function get(key){
+  return JSON.parse(localStorage.getItem(key));
+}
+
+function displayAds(){
+  switch (get('displayAds')){
+    case true:
+      unblockAds();
+      break;
+    default:
+      blockAds();
+      break;
+  }
+}
+
+
+// block the 2 add elements on the page
+function blockAds(){
+  try{
+    document.getElementById('mbEnd').style.display = 'none';
+    document.getElementById('taw').style.display = 'none';  
+  }
+  catch(err){
+    console.log(err);
+  }
+}
+
+function extraNav(){
+  /*
+  copy #navcnt
+  change ID
+  append before div.med
+  */
+}
+
+// unblock the 2 add elements on the page
+function unblockAds(){
+  try{
+    document.getElementById('mbEnd').style.display = null;
+    document.getElementById('taw').style.display = null;
+  }
+  catch(err){
+    console.log(err);
+  }
+}
+
+
+safari.self.addEventListener("message", handleMessage, false);
+
+checkReset();
+displayAds();
 blockSearchResults();

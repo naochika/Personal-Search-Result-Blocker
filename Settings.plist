@@ -6,9 +6,29 @@
 		<key>DefaultValue</key>
 		<false/>
 		<key>Key</key>
-		<string>reset</string>
+		<string>resetPopup</string>
 		<key>Title</key>
-		<string>Reset List</string>
+		<string>Reset Personal Blocklist and Settings?</string>
+		<key>Titles</key>
+		<array>
+			<string>No</string>
+			<string>Yes, reset my settings</string>
+		</array>
+		<key>Type</key>
+		<string>PopUpButton</string>
+		<key>Values</key>
+		<array>
+			<string>No</string>
+			<string>Yes</string>
+		</array>
+	</dict>
+	<dict>
+		<key>DefaultValue</key>
+		<false/>
+		<key>Key</key>
+		<string>toggleAds</string>
+		<key>Title</key>
+		<string>Display Ads?</string>
 		<key>Type</key>
 		<string>CheckBox</string>
 	</dict>

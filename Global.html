@@ -1,9 +1,75 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-<title>Personal Blocklist for Safari</title>
+<title>Personal Search Result Blocker for Safari</title>
 </head>
-<script type="text/javascript"></script>
+<script type="text/javascript">
+/*
+Our Global.html page:
+
+* Provides an interface to the Extension Preference pane in Safari
+* Sends messages to our Injected.js script
+* Listens for messages from the Extension Preference page
+* Can NOT interface directly with the web page we are visiting
+* Is NOT displayed to the user
+* Is loaded once per browser session, regardless of the number of tabs opened.
+* Can provide interactive interfaces to the user (e.g. JS alerts)
+* Can NOT interface with localStorage in the same context as Injected.js
+
+To do:
+
+* Move Injected.js functions to the Global.html page, and pass those functions to Injected.js to lighten the page load
+* Move the Safari settings to a Toolbar icon
+* Create a user interface for manual addition/deletion of rules
+* Allow for regular expressions in rules
+* Add a setting for dimming of ads and/or blocked elements rather than hiding
+
+*/
+function settingChanged(event){
+  if(event.key == "resetPopup"){
+    resetLocalStorage();
+  }
+  if (event.key == "toggleAds"){
+    toggleAds();
+  }
+}
+
+// reset all of our localStorage settings
+function resetLocalStorage(){
+  if (safari.extension.settings.resetPopup == "No"){
+    return;
+  }
+  resetConfirm = confirm("Reset your personal blocklist?");
+  if (resetConfirm){
+    // pass a message to injected to reset storage
+    safari.application.activeBrowserWindow.activeTab.page.dispatchMessage("resetMessageFromGlobal", "true");
+    alert("Your settings have been reset. Your page will reload.");
+    currentURL = safari.application.activeBrowserWindow.activeTab.url;
+    if (currentURL){
+      safari.application.activeBrowserWindow.activeTab.url = currentURL;
+    }
+  }
+  // remove the listener
+  safari.extension.settings.removeEventListener("change");
+  // reset the setting
+  safari.extension.settings.setItem("resetPopup", "No");
+  // add the listener again. this prevents a loop
+  safari.extension.settings.addEventListener("change",settingChanged,false);
+}
+
+function toggleAds(){
+  switch(safari.extension.settings.toggleAds){
+    case true:
+      safari.application.activeBrowserWindow.activeTab.page.dispatchMessage("toggleAdsFromGlobal", true);
+      break;
+    case false:
+      safari.application.activeBrowserWindow.activeTab.page.dispatchMessage("toggleAdsFromGlobal", false);
+      break;
+  }
+}
+
+safari.extension.settings.addEventListener("change", settingChanged, false);
+</script>
 </head>
 <body>
 </body>
