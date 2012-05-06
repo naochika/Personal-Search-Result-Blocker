@@ -7,66 +7,93 @@
 /*
 Our Global.html page:
 
-* Provides an interface to the Extension Preference pane in Safari
-* Sends messages to our Injected.js script
-* Listens for messages from the Extension Preference page
-* Can NOT interface directly with the web page we are visiting
-* Is NOT displayed to the user
-* Is loaded once per browser session, regardless of the number of tabs opened.
-* Can provide interactive interfaces to the user (e.g. JS alerts)
-* Can NOT interface with localStorage in the same context as Injected.js
+- Provides an interface to the Extension Preference pane in Safari
+- Sends messages to our Injected.js script
+- Listens for messages from the Extension Preference page
+- Can NOT interface directly with the web page we are visiting
+- Is NOT displayed to the user
+- Is loaded once per browser session, regardless of the number of tabs opened.
+- Can provide interactive interfaces to the user (e.g. JS alerts)
+- Can NOT interface with localStorage in the same context as Injected.js
 
 To do:
 
-* Move Injected.js functions to the Global.html page, and pass those functions to Injected.js to lighten the page load
-* Move the Safari settings to a Toolbar icon
-* Create a user interface for manual addition/deletion of rules
-* Allow for regular expressions in rules
-* Add a setting for dimming of ads and/or blocked elements rather than hiding
+- Move Injected.js functions to the Global.html page, and pass those functions to Injected.js to lighten the page load
+- Move the Safari settings to a Toolbar icon
+- Create a user interface for manual addition/deletion of rules
+- Allow for regular expressions in rules
+- Add a setting for dimming of ads and/or blocked elements rather than hiding
 
 */
-function settingChanged(event){
-  if(event.key == "resetPopup"){
-    resetLocalStorage();
-  }
-  if (event.key == "toggleAds"){
-    toggleAds();
-  }
+function settingChanged(event) {
+    if (event.key == "resetPopup") {
+        resetLocalStorage();
+    }
+    if (event.key == "toggleAds") {
+        toggleAds();
+    }
 }
 
 // reset all of our localStorage settings
-function resetLocalStorage(){
-  if (safari.extension.settings.resetPopup == "No"){
-    return;
-  }
-  resetConfirm = confirm("Reset your personal blocklist?");
-  if (resetConfirm){
-    // pass a message to injected to reset storage
-    safari.application.activeBrowserWindow.activeTab.page.dispatchMessage("resetMessageFromGlobal", "true");
-    alert("Your settings have been reset. Your page will reload.");
-    currentURL = safari.application.activeBrowserWindow.activeTab.url;
-    if (currentURL){
-      safari.application.activeBrowserWindow.activeTab.url = currentURL;
+function resetLocalStorage() {
+    if (safari.extension.settings.resetPopup == "No") {
+        return;
     }
-  }
-  // remove the listener
-  safari.extension.settings.removeEventListener("change");
-  // reset the setting
-  safari.extension.settings.setItem("resetPopup", "No");
-  // add the listener again. this prevents a loop
-  safari.extension.settings.addEventListener("change",settingChanged,false);
+    resetConfirm = confirm("Reset your personal blocklist?");
+    if (resetConfirm) {
+        // pass a message to injected to reset storage
+        safari.application.activeBrowserWindow.activeTab.page.dispatchMessage("resetMessageFromGlobal", "true");
+        alert("Your settings have been reset. Your page will reload.");
+        currentURL = safari.application.activeBrowserWindow.activeTab.url;
+        if (currentURL) {
+            safari.application.activeBrowserWindow.activeTab.url = currentURL;
+        }
+    }
+    // remove the listener
+    safari.extension.settings.removeEventListener("change");
+    // reset the setting
+    safari.extension.settings.setItem("resetPopup", "No");
+    // add the listener again. this prevents a loop
+    safari.extension.settings.addEventListener("change", settingChanged, false);
 }
 
-function toggleAds(){
-  switch(safari.extension.settings.toggleAds){
+function toggleAds() {
+    switch (safari.extension.settings.toggleAds) {
     case true:
-      safari.application.activeBrowserWindow.activeTab.page.dispatchMessage("toggleAdsFromGlobal", true);
-      break;
+        safari.application.activeBrowserWindow.activeTab.page.dispatchMessage("toggleAdsFromGlobal", true);
+        break;
     case false:
-      safari.application.activeBrowserWindow.activeTab.page.dispatchMessage("toggleAdsFromGlobal", false);
-      break;
-  }
+        safari.application.activeBrowserWindow.activeTab.page.dispatchMessage("toggleAdsFromGlobal", false);
+        break;
+    }
 }
+
+function remoteStorage(domain){
+  //var newTab = safari.self.browserWindow.openTab();
+}
+
+function respondToMessage(messageEvent){
+    console.log('in response');
+    switch (messageEvent.name){
+        case "block-domain":
+            console.log("blocking domain");
+            var domain = messageEvent.message;
+            alert('blocking ' domain);
+            var myTab = browserWindow.openTab('http://127.0.0.1:4567/add/'+domain)
+            myTab..close();
+            //myTab.addEventListener("open", tabOpenHandler, true)
+        break;
+        default:
+        alert("unhandled!");
+        break;
+    }
+
+}
+
+/*
+  Wait for message from injected
+*/
+//safari.application.activeBrowserWindow.activeTab.addEventListener("message", respondToMessage, false);
 
 safari.extension.settings.addEventListener("change", settingChanged, false);
 </script>
