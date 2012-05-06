@@ -52,6 +52,9 @@ Ad-blocking options are basic and may not block all ads.
 
 ### General
 
+When browsing the source you may see some local calls (127.0.0.1); I'm looking at adding a remote service and those calls are for local development/debugging.
+
+
 ## To Do
 
 Things I'd like to add:
