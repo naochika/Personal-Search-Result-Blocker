@@ -35,6 +35,10 @@ To unhide your results:
 4. Click the *Show <domain>* option
 
 
+### Options
+
+Extension options are available in *Safari>Preferences>Extensions*. There is a reset option and an option to toggle the display of advertising.
+
 ## Known issues
 
 ### Hiding results
