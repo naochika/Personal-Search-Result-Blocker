@@ -5,6 +5,13 @@ A free safari extension which allows you to hide Google search results based on 
 
 ## Installation
 
+### Users
+
+If you want to use the extension without building it yourself:
+
+1. Download the [Safari Personal Search Result Blocker extension](https://github.com/nubilus/Personal-Search-Result-Blocker/blob/master/Personal%20Search%20Result%20Blocker.safariextz?raw=true)
+2. Click to install
+
 
 ### Developers
 
