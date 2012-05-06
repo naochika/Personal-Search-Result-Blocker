@@ -244,13 +244,13 @@ function addBlockMessages() {
 
         // already been blocked, so create our unblock message
         if (parentList.classList.contains("nubilus-result-blocked")) {
-            blockMessage.textContent = "- Unblock " + blockURL;
+            blockMessage.textContent = "- Show " + blockURL;
             blockMessage.removeEventListener("click", blockContent, true);
             blockMessage.addEventListener("click", unblockContent, true);
         }
         // not blocked, create our block message
         else {
-            blockMessage.textContent = "- Block " + blockURL;
+            blockMessage.textContent = "- Hide " + blockURL;
             blockMessage.removeEventListener("click", unblockContent, true);
             blockMessage.addEventListener("click", blockContent, true);
         }
@@ -319,7 +319,7 @@ function checkBlockedContent() {
         }
         searchResults = document.getElementById('nubilus-block-box');
         blockBox.classList.add("nubilus-block-box");
-        blockBox.textContent = "Your personal blocklist blocked some results. Click this text to view or edit your blocked results.";
+        blockBox.textContent = "Your personal blocklist hid some results. Click this text to view or edit your blocked results.";
         blockBox.addEventListener("click", displayBlockedResults, true);
     }
 }

@@ -20,9 +20,42 @@ You need a free Safari Developer key to install the extension for distribution. 
 
 ## Usage
 
+### Hiding results
 
+Google search results will show a *Hide <domain>* link. Click the link to hide the result. Results are hidden based on domain name.
+
+
+### Unhiding results
+
+To unhide your results:
+
+1. Scroll to the bottom of the search results page
+2. Click the message "Click this text to view or edit your blocked results"
+3. Blocked results will appear in red with an *Show <domain>* option
+4. Click the *Show <domain>* option
 
 
 ## Known issues
 
-This doesn't work with the 
+### Hiding results
+
+The block option doesn't appear when using google autocomplete. If you visit http://www.google.com/ directly to conduct your search, you won't see the *Hide <domain>* option. To get around this, use the Safari search field for searching, rather than visiting Google directly.
+
+Search results are merely hidden from your view, they aren't blocked server side; you may see fewer results than you expect when searching.
+
+Some results are nested and I may not have accounted for the nesting because I didn't encounter that type of search result, or because Google changed the structure of their page HTML.
+
+
+### Blocking ads
+
+Ad-blocking options are basic and may not block all ads.
+
+### General
+
+## To Do
+
+Things I'd like to add:
+
+1. Remote service & storage for syncing hidden results
+2. Option to dim results rather than hiding
+3. Move hidden results to bottom when hidden
