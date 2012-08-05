@@ -3,6 +3,8 @@ Personal-Search-Result-Blocker
 
 A free safari extension which allows you to hide Google search results based on domain name. Also includes a basic ad blocker.
 
+**Note: Visit your search settings and turn off *Instant results* for best results**
+
 ## Installation
 
 ### Users
@@ -73,3 +75,5 @@ Things I'd like to add:
 1. Remote service & storage for syncing hidden results
 2. Option to dim results rather than hiding
 3. Move hidden results to bottom when hidden
+
+## Updates

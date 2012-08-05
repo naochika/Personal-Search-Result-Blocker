@@ -192,12 +192,17 @@ Hides the search results in our block list
 function blockSearchResults() {
     // ignore the google blank page
     if (document.URL == "http://www.google.com/blank.html"){
+        //alert('blank');
         return;
     }
     try {
+        //alert('not blank');
         searchResults = document.getElementById('ires').firstElementChild;
         siteResults = searchResults.getElementsByTagName('cite');
-
+        //alert(siteResults.length)
+        //for (var i = 0; i < siteResults.length; i++) {
+        //    siteResults[i].style.display = "none";
+        //}
         for (var i = 0; i < siteResults.length; i++) {
             resultHandle = siteResults[i];
             result = siteResults[i].innerText.match(/([^/ ]+)/i)[1];
