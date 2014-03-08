@@ -33,7 +33,16 @@ function settingChanged(event) {
         toggleAds();
     }
 }
-
+/*
+alert(safari.extension.toolbarItems.length);
+safari.extension.toolbarItems.forEach(function(item) {
+                    if (item.identifier == 'testmeni') {
+                        alert('here')
+                        button = item;
+                        button.badge = 0;
+                    }
+                });
+*/
 // reset all of our localStorage settings
 function resetLocalStorage() {
     if (safari.extension.settings.resetPopup == "No") {

@@ -1,3 +1,4 @@
+
 /*
 Our Default.css page:
 - Provides the classes we assign to elements on a Google result page
@@ -6,47 +7,51 @@ Our Default.css page:
 */
 
 /* search result is dimmed */
-.nubilus-result-dimmed{
+.jaydorsey-result-dimmed{
     display:block;
     background-color:#faa;
     opacity: 0.75;
 }
 /* search result is blocked */
-.nubilus-result-blocked{
-    display:none;
+.jaydorsey-result-blocked{
+    /*display:none;*/
     color:blue;
     background-color:#faa;
 }
 /* simple formatting for hiding an element */
-.nubilus-hide{
+.jaydorsey-hide{
     display:none;
 }
 /* opposite of the hide class */
-.nubilus-show{
+.jaydorsey-show{
     display:block;
 }
 /* search result is unblocked */
-.nubilus-result-unblocked{
+.jaydorsey-result-unblocked{
     display:block;
     background-color:transparent;
     color:blue;
     /*opacity: 1.00;*/
 }
+/*
+[class*="fontawesome-"]:before {
+      font-family: 'FontAwesome', sans-serif;
+    }
+*/
 /* class handle for Block/Unblock message */
-.nubilus-block-me{
-    padding-left:10px;
-    display:inline;
-    color:blue;
-    overflow:visible;
-    color:blue;
+.jaydorsey-handle{
+    margin-right:0;
+    padding-left:0;
+    margin-left:0;
+    float:left;
+    overflow: visible !important;
+    background-color:transparent;
+    text-decoration:none;
+    color:transparent;
 }
-/* hover to make sure the link works like a link */
-.nubilus-block-me:hover{
-    text-decoration:underline;
-    color:blue;
-}
+
 /* box with unblock message */
-a.nubilus-block-box{
+a.jaydorsey-block-box{
     display:block;
     margin:1em;
     margin-bottom:20px;

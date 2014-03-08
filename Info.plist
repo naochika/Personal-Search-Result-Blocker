@@ -5,15 +5,15 @@
 	<key>Author</key>
 	<string>Jay Dorsey</string>
 	<key>Builder Version</key>
-	<string>7534.57.2</string>
+	<string>9537.74.9</string>
 	<key>CFBundleDisplayName</key>
 	<string>Personal Search Result Blocker</string>
 	<key>CFBundleIdentifier</key>
-	<string>us.nubil.block</string>
+	<string>com.jaydorsey.block</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.2</string>
+	<string>1.3</string>
 	<key>CFBundleVersion</key>
 	<string>1</string>
 	<key>Chrome</key>
@@ -22,6 +22,43 @@
 		<real>10485760</real>
 		<key>Global Page</key>
 		<string>Global.html</string>
+		<key>Menus</key>
+		<array>
+			<dict>
+				<key>Identifier</key>
+				<string>Item 1</string>
+				<key>Menu Items</key>
+				<array>
+					<dict>
+						<key>Command</key>
+						<string></string>
+						<key>Identifier</key>
+						<string>Subitem 1</string>
+						<key>Title</key>
+						<string>Subitem 1</string>
+					</dict>
+				</array>
+			</dict>
+		</array>
+		<key>Toolbar Items</key>
+		<array>
+			<dict>
+				<key>Command</key>
+				<string></string>
+				<key>Identifier</key>
+				<string>testmeni</string>
+				<key>Image</key>
+				<string>Images/block.png</string>
+				<key>Label</key>
+				<string>Block34</string>
+				<key>Menu</key>
+				<string>Item 1</string>
+				<key>Palette Label</key>
+				<string>Block34</string>
+				<key>Tool Tip</key>
+				<string>Block34</string>
+			</dict>
+		</array>
 	</dict>
 	<key>Content</key>
 	<dict>
@@ -56,8 +93,8 @@
 		</dict>
 	</dict>
 	<key>Update Manifest URL</key>
-	<string>https://github.com/nubilus/Personal-Search-Result-Blocker/blob/master/Personal%20Search%20Result%20Blocker.safariextz</string>
+	<string>https://github.com/j4yd0rs3y/Personal-Search-Result-Blocker/blob/master/Personal%20Search%20Result%20Blocker.safariextz</string>
 	<key>Website</key>
-	<string>http://nubil.us/</string>
+	<string>http://www.jaydorsey.com/</string>
 </dict>
 </plist>
