@@ -28,15 +28,11 @@ variables
 jaydorseyAds = ['mbEnd', 'taw', 'tadsb'];
 
 /*********************************************
-
 localStorage functions
-
 *********************************************/
 
-/*
-    Add a blocked domain to local storage
-*/
 
+// Add a blocked domain to local and remote storage
 function addToBlockList(domain) {
     /*
         remote add
@@ -55,9 +51,8 @@ function addToBlockList(domain) {
     //remoteStorage.close();
     // redirect back to current URL
     //window.open(currentPage);
-    /*
-        local add
-    */
+
+    // local add
     var blockList = JSON.parse(localStorage.getItem('blocked'))
     if (blockList.indexOf(domain) == -1) { // domain does not exist in blocklist
         blockList.push(domain);
@@ -65,11 +60,7 @@ function addToBlockList(domain) {
     localStorage.setItem('blocked', JSON.stringify(blockList))
 }
 
-/*
-    Remove a blocked domain from local storage
-*/
-// remove an item from local storage
-
+// Remove a blocked domain from local and remote storage
 function removeFromBlockList(domain) {
     var blockList = JSON.parse(localStorage.getItem('blocked'));
     if (blockList.indexOf(domain) > -1) {
@@ -78,11 +69,14 @@ function removeFromBlockList(domain) {
     localStorage.setItem('blocked', JSON.stringify(blockList));
 }
 
-/*
-    reset all of our localStorage settings, or set logical defaults
-*/
 
+/*********************************************
+data functions
+*********************************************/
+
+// reset all of our localStorage settings, or set logical defaults
 function resetLocalStorage() {
+    alert('resetting storage');
     console.log("******************************");
     console.log("   Resetting localStorage");
     console.log("******************************");
@@ -90,40 +84,31 @@ function resetLocalStorage() {
     localStorage.setItem('reset', JSON.stringify(false));
 }
 
-/*
-
-*/
-
+// getter
 function get(key) {
     return JSON.parse(localStorage.getItem(key));
 }
 
+// setter
 function set(key, value) {
     localStorage.setItem(key, JSON.stringify(value));
 }
 
 /*********************************************
-
-Generic functions
-
+generic functions
 *********************************************/
 
-/*
-    Get the hostname from a string
-    source: http://beardscratchers.com/journal/using-javascript-to-get-the-hostname-of-a-url
-*/
+// Get the hostname from a string
+// Credit: source: http://beardscratchers.com/journal/using-javascript-to-get-the-hostname-of-a-url
 String.prototype.getHostname = function() {
     var re = new RegExp('^(?:f|ht)tp(?:s)?\://([^/]+)', 'im');
     return this.match(re)[1].toString();
 }
 
-/*
-    De-googlize and normalize the URL
-*/
-
+// De-googlize and normalize the URL
 function normalizeURL(url) {
     url = url.toString();
-    // google click tracker BS
+    // google click tracker info
     if (url.getHostname() == 'www.google.com') { // get the real URL from google click-track
         url = unescape(url.match(/[?&]url=([^&$]*)/i)[1]);
         domain = url.getHostname();
@@ -133,7 +118,15 @@ function normalizeURL(url) {
     return [url, domain];
 }
 
-
+// identifies the parent LI node
+var identifyListItem = function(el) {
+    if (el.nodeName != "LI") {
+        return identifyListItem.call(this, el.parentElement);
+    }
+    else{
+        return el;
+    }
+}
 
 
 
@@ -201,19 +194,24 @@ Does all the pre-work for blocking search results
 */
 
 function preloadBlockResults() {
-    // ignore the google blank page
-    if (document.URL == "http://www.google.com/blank.html") {
-        //alert('blank');
-        return;
+    // ignore pages without the IRES element ID
+    if (document.getElementById('ires') === null){
+        return
     }
     try {
         // get the OL containing the LI search result items
-        searchResultsContainer = document.getElementById('ires').firstElementChild;
-        searchResults = searchResultsContainer.getElementsByTagName('cite');
-
+        var searchResultsContainer = document.getElementById('ires').firstElementChild;
+        var searchResults = searchResultsContainer.getElementsByTagName('cite');    // maybe change this to LI later
+                                                                                    // and add in inline--no need to set
         for (var i = 0; i < searchResults.length; i++) {
-            resultHandle = searchResults[i];
-            url = resultHandle.innerText.match(/([^/ ]+)/i)[1];
+            resultHandle = searchResults[i]; // this is the cite tag
+            parentListItem = identifyListItem(resultHandle);
+            h3 = parentListItem.getElementsByTagName('h3')[0];
+            ahref = h3.getElementsByTagName('a')[0];
+            test = normalizeURL(ahref.getAttribute('href'));
+            url = test[1];
+
+            //url = resultHandle.innerText.match(/([^/ ]+)/i)[1];
             // assigns our default styling
             // check this laterunblockContent(resultHandle, url, false);
 
@@ -227,29 +225,29 @@ function preloadBlockResults() {
 
             // see if the domain exists in our block list
             if (blockList.indexOf(url) > -1) {
-                // if so, block it
+                // if so, block it and assign block styling
                 blockContent(resultHandle, url);
             }
             else {
+                // not actually unblocking, but merely
+                // assigning the unblock styling
                 unblockContent(resultHandle, url);
             }
         }
-        console.log('adding block messages')
         //blockFromList();
     } catch (err) {
+        //alert(document.getElementById('ires'));
         console.log("******************************");
         console.log(" Error in blockSearchResults");
         console.log(err);
     }
 }
 
-//creates an empty span so we can block/unblock
+//creates an empty span in a list result so we can block/unblock
 function initializeHandle(handle){
     var parentListItem = identifyListItem(handle);
     var h3 = parentListItem.getElementsByTagName('h3')[0];
-
     var jspan = document.createElement('span');
-    //jspan.classList.add("jaydorsey-block-me");
     jspan.classList.add("jaydorsey-handle");
     //jspan.innerHTML = ("&#x1f6ab;");  // 2705 for add back
     //jspan.addEventListener("click", blockContent, true);
@@ -305,18 +303,6 @@ function blockFromList() {
 }
 
 
-var identifyListItem = function(el) {
-    if (el.nodeName != "LI"){//} && el.className != "g"){
-        return identifyListItem.call(this, el.parentElement);
-    }
-    else{
-        return el;
-    }
-}
-
-
-
-
 function blockContent(element, url) {
     // hacky. i could split this up into 2 functions but i'd prefer to figure out
     //   how to trigger a mouse event from block search
@@ -366,16 +352,9 @@ function unblockContent(element, url, storage) {
     if (element.constructor === MouseEvent) {
         // when our element is not an element, make it an element
         const element = element.target;
-        // add to local storage
-        // ONLY if we've clicked though
-        //addToBlockList(element.getAttribute("data-source"));
-        //alert(element.getAttribute("data-source"));
+        // remove from local storage
+        // ONLY if we've clicked
         removeFromBlockList(element.getAttribute("data-source"));
-    }
-
-    // remove from local storage
-    if (storage === true){
-// remove
     }
 
     // block the result
@@ -467,6 +446,12 @@ function handleMessage(msgEvent) {
     }
 }
 
+//safari.application.activeBrowserWindow.activeTab.page.dispatchMessage("resetMessageFromGlobal", "true");
+//if !(document.getElementById('ires') === null){
+//    safari.self.tab.dispatchMessage("updateBadge", true);
+//}
+
+
 
 /*********************************************
 
@@ -475,6 +460,7 @@ Listener for recieving messages.
 *********************************************/
 
 safari.self.addEventListener("message", handleMessage, false);
+//safari.self.tab.dispatchMessage('updateBadge', {count: 15});
 
 
 /*********************************************

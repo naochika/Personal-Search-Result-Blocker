@@ -22,41 +22,23 @@
 		<real>10485760</real>
 		<key>Global Page</key>
 		<string>Global.html</string>
-		<key>Menus</key>
-		<array>
-			<dict>
-				<key>Identifier</key>
-				<string>Item 1</string>
-				<key>Menu Items</key>
-				<array>
-					<dict>
-						<key>Command</key>
-						<string></string>
-						<key>Identifier</key>
-						<string>Subitem 1</string>
-						<key>Title</key>
-						<string>Subitem 1</string>
-					</dict>
-				</array>
-			</dict>
-		</array>
 		<key>Toolbar Items</key>
 		<array>
 			<dict>
 				<key>Command</key>
 				<string></string>
 				<key>Identifier</key>
-				<string>testmeni</string>
+				<string>blocked</string>
 				<key>Image</key>
 				<string>Images/block.png</string>
 				<key>Label</key>
-				<string>Block34</string>
+				<string>Search Results Blocker</string>
 				<key>Menu</key>
-				<string>Item 1</string>
+				<string></string>
 				<key>Palette Label</key>
-				<string>Block34</string>
+				<string>Results Blocker</string>
 				<key>Tool Tip</key>
-				<string>Block34</string>
+				<string>Safari personal search results blocker</string>
 			</dict>
 		</array>
 	</dict>

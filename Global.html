@@ -1,8 +1,4 @@
 <!DOCTYPE HTML>
-<html>
-<head>
-<title>Personal Search Result Blocker for Safari</title>
-</head>
 <script type="text/javascript">
 /*
 Our Global.html page:
@@ -25,24 +21,109 @@ To do:
 - Add a setting for dimming of ads and/or blocked elements rather than hiding
 
 */
-function settingChanged(event) {
+
+// number of blocked sites on the page
+alert('global loaded');
+var blockedSites = safari.extension.settings.blockedSites;
+
+
+// Register for the validate and command events.
+safari.application.addEventListener("validate", performValidate, false);
+safari.application.addEventListener("command", performCommand, false);
+//
+safari.extension.settings.addEventListener("change", performSetting, false);
+
+
+
+function performValidate(event)
+{
+    // Switch based on the command of the event. You should always check the command.
+    console.log(event.command);
+    switch (event.command) {
+    case "show-messages":  // this is an example
+        // Set the badge of the target, if the target has a badge property.
+        // Some targets that send commands, like context menu items, don't have badges.
+        if ("badge" in event.target)
+            event.target.badge = unreadMessages;
+        break;
+    case "show-blocked":
+        if ("badge" in event.target)
+            event.target.badge = blockedSites;
+        break;
+    }
+}
+
+
+/*
+
+function validateHandler(event)
+{
+    if (event.command === "reload-page") {
+        // Disable the button if there is no URL loaded in the tab.
+        event.target.disabled = !event.target.browserWindow.activeTab.url;
+    }
+
+    var itemArray = safari.extension.toolbarItems;
+    alert(safari.extension.toolbarItems.count)
+    for (var i = 0; i < itemArray.length; ++i) {
+        var item = itemArray[i];
+        if (item.identifier == "jaydorsey-block-toolbar")
+        {
+            item.badge = 25;
+            console.log('test');
+        }
+    }
+}
+*/
+
+function performCommand(event)
+{
+    // Switch based on the command of the event. You should always check the command.
+    switch (event.command) {
+    case "show-messages":
+        // Show an alert with the number of messages.
+        alert("You marked " + unreadMessages + " messages as read. Have a nice day!");
+
+        // Reset the unread messages back to 0.
+        updateUnreadMessageCount(0);
+        break;
+    case "show-blocked":
+        alert("Badged@");
+
+        break;
+    }
+}
+
+
+
+
+
+
+
+
+
+function performSetting(event)
+{
+    /*
     if (event.key == "resetPopup") {
         resetLocalStorage();
     }
     if (event.key == "toggleAds") {
         toggleAds();
-    }
+    }*/
+
+    switch (event.command) { // or event.key?
+    case "resetPopup":  // this is an example
+        resetLocalStorage();
+        break;
+    case "toggleAds":
+        toggleAds();
+        break;
 }
-/*
-alert(safari.extension.toolbarItems.length);
-safari.extension.toolbarItems.forEach(function(item) {
-                    if (item.identifier == 'testmeni') {
-                        alert('here')
-                        button = item;
-                        button.badge = 0;
-                    }
-                });
-*/
+
+
+
+
 // reset all of our localStorage settings
 function resetLocalStorage() {
     if (safari.extension.settings.resetPopup == "No") {
@@ -97,17 +178,56 @@ function respondToMessage(messageEvent){
             alert("unhandled!");
         break;
     }
-
 }
+
+
+// wait for message from injected
+// source: https://github.com/josephschmitt/Embedinator/blob/master/Embedinator.safariextension/global.html
+/*
+safari.application.addEventListener("message", function(e) {
+    //Get references
+    curTab = e.target;
+
+    safari.extension.toolbarItems.forEach(function(item) {
+        if (item.identifier == 'jaydorsey-block-toolbar') {
+            button = item;
+        }
+    });
+
+    //Extension INIT
+    if (e.name == 'init') {
+        updateSettings({
+            autorun: safari.extension.settings.autorun,
+            showBadge: safari.extension.settings.showBadge
+        });
+
+        if (settings.showBadge) {
+            getBadgeCount();
+        }
+    }
+    else if (e.name == 'updateBadge') {
+      alert('test');
+        button.badge = e.message.count;
+    }
+},false);
+*/
+
+//alert(safari.extension.toolbarItems.count);
+/*
+safari.extension.toolbarItems.forEach(function(item) {
+    if (item.identifier == 'jaydorsey-block-toolbar') {
+        button = item;
+        button.badge = 15;
+    }
+});
+*/
+
+
+
 
 /*
   Wait for message from injected
 */
 //safari.application.activeBrowserWindow.activeTab.addEventListener("message", respondToMessage, false);
 
-safari.extension.settings.addEventListener("change", settingChanged, false);
 </script>
-</head>
-<body>
-</body>
-</html>
