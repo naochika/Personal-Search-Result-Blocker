@@ -34,7 +34,7 @@
 	</dict>
 	<dict>
 		<key>DefaultValue</key>
-		<real>12</real>
+		<real>0.0</real>
 		<key>Key</key>
 		<string>blockedSites</string>
 	</dict>

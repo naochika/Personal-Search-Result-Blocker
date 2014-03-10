@@ -8,7 +8,7 @@ Our Injected.js page:
 - CAN interact with the Global.html page via messages
 - Does all the heavy JS lifting
 
-To do:
+TODO:
 
 - Move heavy lifting to Global.html page
 - Add feature for dimming rather than blocking
@@ -17,15 +17,15 @@ To do:
 
 Credits:
 
-- Code beautified via http://jsbeautifier.org/
 - hostname function via http://beardscratchers.com/journal/using-javascript-to-get-the-hostname-of-a-url
 
 */
 
-/*
-variables
-*/
-jaydorseyAds = ['mbEnd', 'taw', 'tadsb'];
+
+var jaydorseyAds = ['mbEnd', 'taw', 'tadsb'];
+var badgeCount = 0;
+
+alert('loading injected');
 
 /*********************************************
 localStorage functions
@@ -33,6 +33,7 @@ localStorage functions
 
 
 // Add a blocked domain to local and remote storage
+
 function addToBlockList(domain) {
     /*
         remote add
@@ -53,14 +54,15 @@ function addToBlockList(domain) {
     //window.open(currentPage);
 
     // local add
-    var blockList = JSON.parse(localStorage.getItem('blocked'))
+    var blockList = JSON.parse(localStorage.getItem('blocked'));
     if (blockList.indexOf(domain) == -1) { // domain does not exist in blocklist
         blockList.push(domain);
     }
-    localStorage.setItem('blocked', JSON.stringify(blockList))
+    localStorage.setItem('blocked', JSON.stringify(blockList));
 }
 
 // Remove a blocked domain from local and remote storage
+
 function removeFromBlockList(domain) {
     var blockList = JSON.parse(localStorage.getItem('blocked'));
     if (blockList.indexOf(domain) > -1) {
@@ -75,8 +77,9 @@ data functions
 *********************************************/
 
 // reset all of our localStorage settings, or set logical defaults
+
 function resetLocalStorage() {
-    alert('resetting storage');
+    //alert('resetting storage');
     console.log("******************************");
     console.log("   Resetting localStorage");
     console.log("******************************");
@@ -85,11 +88,13 @@ function resetLocalStorage() {
 }
 
 // getter
+
 function get(key) {
     return JSON.parse(localStorage.getItem(key));
 }
 
 // setter
+
 function set(key, value) {
     localStorage.setItem(key, JSON.stringify(value));
 }
@@ -104,8 +109,8 @@ String.prototype.getHostname = function() {
     var re = new RegExp('^(?:f|ht)tp(?:s)?\://([^/]+)', 'im');
     return this.match(re)[1].toString();
 }
-
 // De-googlize and normalize the URL
+
 function normalizeURL(url) {
     url = url.toString();
     // google click tracker info
@@ -122,8 +127,7 @@ function normalizeURL(url) {
 var identifyListItem = function(el) {
     if (el.nodeName != "LI") {
         return identifyListItem.call(this, el.parentElement);
-    }
-    else{
+    } else {
         return el;
     }
 }
@@ -140,329 +144,235 @@ var identifyListItem = function(el) {
     Do we block ads or not?
 */
 
-function displayAds() {
-    switch (get('displayAds')) {
-        case true:
-            unblockAds();
-            break;
-        default:
-            blockAds();
-            break;
+    function displayAds() {
+        switch (get('displayAds')) {
+            case true:
+                unblockAds();
+                break;
+            default:
+                blockAds();
+                break;
+        }
     }
-}
 
-/*
+    /*
     Block the 2 ad elements on the page
     parentList.classList.add("jaydorsey-result-blocked");
     parentList.classList.remove("jaydorsey-result-unblocked");
 */
 
-function blockAds() {
-    jaydorseyAds.forEach(function(item) {
-        try {
-            document.getElementById(item).classList.add("jaydorsey-hide");
-        } catch (err) {
-            console.log("******************************");
-            console.log("     Error in blockAds");
-            console.log(err);
-        }
-    });
-}
+    function blockAds() {
+        jaydorseyAds.forEach(function(item) {
+            try {
+                document.getElementById(item).classList.add("jaydorsey-hide");
+            } catch (err) {
+                console.log("******************************");
+                console.log("     Error in blockAds");
+                console.log(err);
+            }
+        });
+    }
 
-/*
+    /*
     Unblock the 2 ad elements on the page
 */
 
-function unblockAds() {
-    jaydorseyAds.forEach(function(item) {
-        try {
-            document.getElementById(item).classList.remove("jaydorsey-hide");
-        } catch (err) {
-            //console.log("******************************");
-            //console.log("    Error in unblockAds");
-            //console.log(err);
-        }
-    });
-}
+    function unblockAds() {
+        jaydorseyAds.forEach(function(item) {
+            try {
+                document.getElementById(item).classList.remove("jaydorsey-hide");
+            } catch (err) {
+                //console.log("******************************");
+                //console.log("    Error in unblockAds");
+                //console.log(err);
+            }
+        });
+    }
 
 
 
 
 
-/*
+    /*
 Does all the pre-work for blocking search results
 */
 
-function preloadBlockResults() {
-    // ignore pages without the IRES element ID
-    if (document.getElementById('ires') === null){
-        return
-    }
-    try {
-        // get the OL containing the LI search result items
-        var searchResultsContainer = document.getElementById('ires').firstElementChild;
-        var searchResults = searchResultsContainer.getElementsByTagName('cite');    // maybe change this to LI later
-                                                                                    // and add in inline--no need to set
-        for (var i = 0; i < searchResults.length; i++) {
-            resultHandle = searchResults[i]; // this is the cite tag
-            parentListItem = identifyListItem(resultHandle);
-            h3 = parentListItem.getElementsByTagName('h3')[0];
-            ahref = h3.getElementsByTagName('a')[0];
-            test = normalizeURL(ahref.getAttribute('href'));
-            url = test[1];
-
-            //url = resultHandle.innerText.match(/([^/ ]+)/i)[1];
-            // assigns our default styling
-            // check this laterunblockContent(resultHandle, url, false);
-
-            initializeHandle(resultHandle);
-
-            // add a placeholder for our unblock text
-            //document.getElementById('ires').appendChild(blockBox)
-
-            // open our blocklist up
-            var blockList = JSON.parse(localStorage.getItem('blocked'));
-
-            // see if the domain exists in our block list
-            if (blockList.indexOf(url) > -1) {
-                // if so, block it and assign block styling
-                blockContent(resultHandle, url);
-            }
-            else {
-                // not actually unblocking, but merely
-                // assigning the unblock styling
-                unblockContent(resultHandle, url);
-            }
+    function preloadBlockResults() {
+        alert('preloading');
+        // ignore pages without the IRES element ID
+        if (document.getElementById('ires') === null) {
+            return;
         }
-        //blockFromList();
-    } catch (err) {
-        //alert(document.getElementById('ires'));
-        console.log("******************************");
-        console.log(" Error in blockSearchResults");
-        console.log(err);
-    }
-}
-
-//creates an empty span in a list result so we can block/unblock
-function initializeHandle(handle){
-    var parentListItem = identifyListItem(handle);
-    var h3 = parentListItem.getElementsByTagName('h3')[0];
-    var jspan = document.createElement('span');
-    jspan.classList.add("jaydorsey-handle");
-    //jspan.innerHTML = ("&#x1f6ab;");  // 2705 for add back
-    //jspan.addEventListener("click", blockContent, true);
-    h3.appendChild(jspan);
-}
-/*
-Takes the pre-loaded list and makes sure the results are hidden
-This is DEPRECATED
-*/
-
-function blockFromList() {
-    var searchResults = document.getElementById('ires').firstElementChild;
-    // this is each individual site result
-    var siteResults = searchResults.getElementsByTagName('cite');
-
-    for (var i = 0; i < siteResults.length; i++) {
-        result = siteResults[i];
-        /*
-      this should be the parent element a few nodes up
-
-      this element will hold the custom css class we use to determine whether an
-      element was blocked or not.
-      */
-        parentList = result.parentElement.parentElement.parentElement.parentElement;
-        blockURL = result.innerText.match(/([^/ ]+)/i)[1]; // URL to block
-
-        // check if we've already created a "Block [site]" message, if so overwrite
-        if (result.getElementsByClassName('jaydorsey-block-me').length > 0) {
-            var blockMessage = siteResults[i].getElementsByClassName('jaydorsey-block-image')[0]
-        } else {
-            var blockMessage = document.createElement('img');
-            blockMessage.classList.add('jaydorsey-block-image')
-            result.appendChild(blockMessage);
-        }
-
-        // already been blocked, so create our unblock message
-        if (parentList.classList.contains("jaydorsey-result-blocked")) {
-            blockMessage.classList.add("jaydorsey-unblock-image");
-            blockMessage.alt = "Show " + blockURL;
-            blockMessage.removeEventListener("click", blockContent, true);
-            blockMessage.addEventListener("click", unblockContent, true);
-        }
-        // not blocked, create our block message
-        else {
-            blockMessage.alt = "Block " + blockURL;
-            //blockMessage.classList.add("jaydorsey-block-image");
-            blockMessage.removeEventListener("click", unblockContent, true);
-            blockMessage.addEventListener("click", blockContent, true);
-        }
-        blockMessage.setAttribute("data-source", blockURL);
-    }
-    checkBlockedContent();
-}
-
-
-function blockContent(element, url) {
-    // hacky. i could split this up into 2 functions but i'd prefer to figure out
-    //   how to trigger a mouse event from block search
-    // this is triggered only by manual blocking
-    if (element.constructor === MouseEvent) {
-        // when our element is not an element, make it an element
-        const element = element.target;
-        // add to local storage
-        // ONLY if we've clicked though
-        addToBlockList(element.getAttribute("data-source"));
-    }
-    // remove the blockContent listener, because the content is already blocked
-    // parentList is the container LI that holds the result information
-    parentList = identifyListItem(element);
-    parentList.classList.add("jaydorsey-result-blocked");
-
-    var jspan = parentList.getElementsByClassName('jaydorsey-handle')[0];
-    jspan.innerHTML = ("&#x2705;");
-    jspan.parentElement.style.overflow = "visible"
-    jspan.classList.remove("jaydorsey-block-me");
-    jspan.classList.add("jaydorsey-unblock-me");
-
-    jspan.removeEventListener("click", blockContent, true);
-    jspan.addEventListener("click", unblockContent, true);
-
-    jspan.setAttribute("data-source", url);
-/*
-    var itemArray = safari.extension.toolbarItems;
-    alert(itemArray.length);
-    for (var i = 0; i < itemArray.length; ++i) {
-        var item = itemArray[i];
-        if (item.identifier == "testmeni"){
-            item.badge = item.badge + 1;
-        }
-    }
-    */
-    //parentList.classList.remove("jaydorsey-result-unblocked");
-    //parentList.style.display = "none"; // manual display, since that's how we activate the temporary show
-    //addBlockMessages();
-}
-
-
-
-// unblocks already blocked content
-
-function unblockContent(element, url, storage) {
-    if (element.constructor === MouseEvent) {
-        // when our element is not an element, make it an element
-        const element = element.target;
-        // remove from local storage
-        // ONLY if we've clicked
-        removeFromBlockList(element.getAttribute("data-source"));
-    }
-
-    // block the result
-    parentList = identifyListItem(element);
-    parentList.classList.remove("jaydorsey-result-blocked");
-
-    var jspan = parentList.getElementsByClassName('jaydorsey-handle')[0];
-
-    jspan.innerHTML = ("&#x1f6ab;");
-    jspan.parentElement.style.overflow = "visible"
-    jspan.classList.remove("jaydorsey-unblock-me");
-    jspan.classList.add("jaydorsey-block-me");
-
-    jspan.removeEventListener("click", unblockContent, true);
-    jspan.addEventListener("click", blockContent, true);
-
-    jspan.setAttribute("data-source", url);
-
-    //addBlockMessages();
-}
-
-
-// does a simple check to see if we need a trigger to allow unblocking
-
-function checkBlockedContent() {
-    // attempt to remove any existing info box if no results are blocked
-    if (document.getElementsByClassName('jaydorsey-result-blocked').length == 0) {
         try {
-            parent = document.getElementById('ires');
-            child = document.getElementById('jaydorsey-block-box');
-            parent.removeChild(child);
+            // get the OL containing the LI search result items
+            var searchResultsContainer = document.getElementById('ires').firstElementChild;
+            var searchResults = searchResultsContainer.getElementsByTagName('cite'); // maybe change this to LI later
+            // and add in inline--no need to set
+            badgeCount = 0;
+            for (var i = 0; i < searchResults.length; i++) {
+                resultHandle = searchResults[i]; // this is the cite tag
+                parentListItem = identifyListItem(resultHandle);
+                h3 = parentListItem.getElementsByTagName('h3')[0];
+                ahref = h3.getElementsByTagName('a')[0];
+                test = normalizeURL(ahref.getAttribute('href'));
+                url = test[1];
+
+                //url = resultHandle.innerText.match(/([^/ ]+)/i)[1];
+                // assigns our default styling
+                // check this laterunblockContent(resultHandle, url, false);
+
+                initializeHandle(resultHandle);
+                alert('init');
+
+                // add a placeholder for our unblock text
+                //document.getElementById('ires').appendChild(blockBox)
+
+                // open our blocklist up
+                var blockList = JSON.parse(localStorage.getItem('blocked'));
+
+                // see if the domain exists in our block list
+                if (blockList.indexOf(url) > -1) {
+                    // if so, block it and assign block styling
+                    alert('blocking ' + url);
+                    blockContent(resultHandle, url);
+                } else {
+                    // not actually unblocking, but merely
+                    // assigning the unblock styling
+                    unblockContent(resultHandle, url);
+                }
+            }
+            //blockFromList();
         } catch (err) {
-            // fails silently in the corner
+            //alert(document.getElementById('ires'));
+            console.log("******************************");
+            console.log(" Error in blockSearchResults");
+            console.log(err);
         }
-    } else {
-        if (document.getElementById('jaydorsey-block-box')) {
-            // nothing to see here. yet. maybe
-        } else { // create a block box with data
-            blockBox = document.createElement('a');
-            blockBox.setAttribute("id", "jaydorsey-block-box");
-            document.getElementById('ires').appendChild(blockBox)
-            //document.getElementById('jaydorsey-block-box')
+    }
+
+    //creates an empty span in a list result so we can block/unblock
+    function initializeHandle(handle) {
+        var parentListItem = identifyListItem(handle);
+        var h3 = parentListItem.getElementsByTagName('h3')[0];
+        var jspan = document.createElement('span');
+        jspan.classList.add("jaydorsey-handle");
+        //jspan.innerHTML = ("&#x1f6ab;");  // 2705 for add back
+        //jspan.addEventListener("click", blockContent, true);
+        h3.appendChild(jspan);
+    }
+
+    // function here to count blocked elements;
+    // send it with both the blockContent, but also the mouseclick of unblock
+    function blockContent(element, url) {
+        // hacky. i could split this up into 2 functions but i'd prefer to figure out
+        //   how to trigger a mouse event from block search
+        // this is triggered only by manual blocking
+        if (element.constructor === MouseEvent) {
+            // when our element is not an element, make it an element
+            const element = element.target;
+            // add to local storage
+            // ONLY if we've clicked though
+            addToBlockList(element.getAttribute("data-source"));
         }
-        searchResults = document.getElementById('jaydorsey-block-box');
-        blockBox.classList.add("jaydorsey-block-box");
-        blockBox.textContent = "Your personal blocklist hid some results. Click this text to view or edit your blocked results.";
-        blockBox.addEventListener("click", displayBlockedResults, true);
+        // remove the blockContent listener, because the content is already blocked
+        // parentList is the container LI that holds the result information
+        parentList = identifyListItem(element);
+        parentList.classList.add("jaydorsey-result-blocked");
+
+        var jspan = parentList.getElementsByClassName('jaydorsey-handle')[0];
+        jspan.innerHTML = ("&#x2705;");
+        jspan.parentElement.style.overflow = "visible"
+        jspan.classList.remove("jaydorsey-block-me");
+        jspan.classList.add("jaydorsey-unblock-me");
+
+        jspan.removeEventListener("click", blockContent, true);
+        jspan.addEventListener("click", unblockContent, true);
+
+        jspan.setAttribute("data-source", url);
+        //safari.self.tab.dispatchMessage("update-badge", "add");
+        badgeCount += 1;
+        //alert('sending count of ' + badgeCount);
+        safari.self.tab.dispatchMessage('update-badge', {
+            count: badgeCount
+        });
     }
-}
 
-function displayBlockedResults() {
-    var blockedResults = document.getElementsByClassName('jaydorsey-result-blocked');
-    for (var i = 0; i < blockedResults.length; i++) {
-        blockedResults[i].style.display = "block";
+    // unblocks already blocked content
+    function unblockContent(element, url, storage) {
+        if (element.constructor === MouseEvent) {
+            // when our element is not an element, make it an element
+            const element = element.target;
+            // remove from local storage
+            // ONLY if we've clicked
+            removeFromBlockList(element.getAttribute("data-source"));
+            //safari.self.tab.dispatchMessage("update-badge", "subtract");
+        }
+
+        // block the result
+        parentList = identifyListItem(element);
+        parentList.classList.remove("jaydorsey-result-blocked");
+
+        var jspan = parentList.getElementsByClassName('jaydorsey-handle')[0];
+
+        jspan.innerHTML = ("&#x1f6ab;");
+        jspan.parentElement.style.overflow = "visible"
+        jspan.classList.remove("jaydorsey-unblock-me");
+        jspan.classList.add("jaydorsey-block-me");
+
+        jspan.removeEventListener("click", unblockContent, true);
+        jspan.addEventListener("click", blockContent, true);
+
+        jspan.setAttribute("data-source", url);
+
+        //addBlockMessages();
     }
-}
 
-// initializes our settings, also used as reset in case of failure
 
-function checkReset() {
-    try {
-        if (localStorage.getItem('blocked') == null) {
+
+
+    // initializes our settings, also used as reset in case of failure
+
+    function checkReset() {
+        try {
+            if (localStorage.getItem('blocked') == null) {
+                resetLocalStorage();
+            }
+        } catch (err) {
+            alert('resetting storage');
+            console.log("******************************");
+            console.log("    Resetting localStorage");
+            console.log(err);
             resetLocalStorage();
         }
-    } catch (err) {
-        console.log("******************************");
-        console.log("    Resetting localStorage");
-        console.log(err);
-        resetLocalStorage();
     }
-}
 
-function handleMessage(msgEvent) {
-    var messageName = msgEvent.name;
-    var messageData = msgEvent.message;
-    if (messageName === "resetMessageFromGlobal") {
-        if (messageData === "true") {
-            // reset local Storage;
-            resetLocalStorage();
+    function handleMessage(msgEvent) {
+        var messageName = msgEvent.name;
+        var messageData = msgEvent.message;
+        if (messageName === "resetMessageFromGlobal") {
+            if (messageData === "true") {
+                // reset local Storage;
+                resetLocalStorage();
+            }
+        }
+        if (messageName === "toggleAdsFromGlobal") {
+            if (messageData === true) {
+                set('displayAds', true);
+            } else {
+                set('displayAds', false)
+            }
+            displayAds();
         }
     }
-    if (messageName === "toggleAdsFromGlobal") {
-        if (messageData === true) {
-            set('displayAds', true);
-        } else {
-            set('displayAds', false)
-        }
-        displayAds();
-    }
-}
 
-//safari.application.activeBrowserWindow.activeTab.page.dispatchMessage("resetMessageFromGlobal", "true");
-//if !(document.getElementById('ires') === null){
-//    safari.self.tab.dispatchMessage("updateBadge", true);
-//}
+    //safari.application.activeBrowserWindow.activeTab.page.dispatchMessage("resetMessageFromGlobal", "true");
+    //if !(document.getElementById('ires') === null){
+    //    safari.self.tab.dispatchMessage("updateBadge", true);
+    //}
 
 
-
-/*********************************************
-
-Listener for recieving messages.
-
-*********************************************/
-
+// event listeners
 safari.self.addEventListener("message", handleMessage, false);
-//safari.self.tab.dispatchMessage('updateBadge', {count: 15});
-
-
 /*********************************************
 
 Call these on each page load.

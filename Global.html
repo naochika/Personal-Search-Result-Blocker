@@ -23,22 +23,18 @@ To do:
 */
 
 // number of blocked sites on the page
-alert('global loaded');
 var blockedSites = safari.extension.settings.blockedSites;
-
 
 // Register for the validate and command events.
 safari.application.addEventListener("validate", performValidate, false);
 safari.application.addEventListener("command", performCommand, false);
-//
+safari.application.addEventListener("message", performMessage, false);
 safari.extension.settings.addEventListener("change", performSetting, false);
-
-
 
 function performValidate(event)
 {
     // Switch based on the command of the event. You should always check the command.
-    console.log(event.command);
+    //alert(event.command);
     switch (event.command) {
     case "show-messages":  // this is an example
         // Set the badge of the target, if the target has a badge property.
@@ -54,38 +50,18 @@ function performValidate(event)
 }
 
 
-/*
-
-function validateHandler(event)
-{
-    if (event.command === "reload-page") {
-        // Disable the button if there is no URL loaded in the tab.
-        event.target.disabled = !event.target.browserWindow.activeTab.url;
-    }
-
-    var itemArray = safari.extension.toolbarItems;
-    alert(safari.extension.toolbarItems.count)
-    for (var i = 0; i < itemArray.length; ++i) {
-        var item = itemArray[i];
-        if (item.identifier == "jaydorsey-block-toolbar")
-        {
-            item.badge = 25;
-            console.log('test');
-        }
-    }
-}
-*/
-
 function performCommand(event)
 {
     // Switch based on the command of the event. You should always check the command.
+    alert(event.command);
     switch (event.command) {
     case "show-messages":
+        // TODO this will only show the count which was passed.
         // Show an alert with the number of messages.
-        alert("You marked " + unreadMessages + " messages as read. Have a nice day!");
-
+        //alert("You marked " + unreadMessages + " messages as read. Have a nice day!");
+        alert('test');
         // Reset the unread messages back to 0.
-        updateUnreadMessageCount(0);
+        //updateUnreadMessageCount(0);
         break;
     case "show-blocked":
         alert("Badged@");
@@ -94,13 +70,47 @@ function performCommand(event)
     }
 }
 
+function performMessage(message)
+{
+    //alert(event.message.count);
+    switch (message.name){
+    case "update-badge":
+        //alert('updating badge with' + message.message.count);
+        // Store the value in settings so it persists between launches.
+        alert(message.message.count);
+        safari.extension.settings.blockedSites = message.message.count;
+        /*
+        if (message.message == "add"){
+            safari.extension.settings.blockedSites = safari.extension.settings.blockedSites += 1;
+        }
+        else{
+            safari.extension.settings.blockedSites = safari.extension.settings.blockedSites -= 1;
+        }
+        */
+        // Make all the toolbar items validate to update their badge.
+        validateToolbarItems();
+        break;
+    }
+}
 
+function validateToolbarItems()
+{
+    // Iterate over all the toolbar items and tell them to validate, so their
+    // badge will be updated.
+    var toolbarItems = safari.extension.toolbarItems;
+    for (var i = 0; i < toolbarItems.length; ++i) {
+        // Skip any toolbar item that is not the messages item. You should always
+        // check the identifier, even if your extension only has one toolbar item.
+        if (toolbarItems[i].identifier !== "messages")
+            continue;
 
-
-
-
-
-
+        // Calling validate will dispatch a validate event, which will call
+        // performValidate for each toolbar item. This is the recommended method
+        // of updating items instead of directly setting a badge here, so multiple
+        // event listeners have a chance to validate the item.
+        toolbarItems[i].validate();
+    }
+}
 
 function performSetting(event)
 {
@@ -119,7 +129,9 @@ function performSetting(event)
     case "toggleAds":
         toggleAds();
         break;
+    }
 }
+
 
 
 
@@ -147,6 +159,7 @@ function resetLocalStorage() {
     safari.extension.settings.addEventListener("change", settingChanged, false);
 }
 
+
 function toggleAds() {
     switch (safari.extension.settings.toggleAds) {
     case true:
@@ -162,72 +175,6 @@ function remoteStorage(domain){
   //var newTab = safari.self.browserWindow.openTab();
 }
 
-function respondToMessage(messageEvent){
-    console.log('in response');
-    switch (messageEvent.name){
-        case "block-domain":
-            console.log("blocking domain");
-            var domain = messageEvent.message;
-            alert('blocking ' domain);
-            // this was going to be testing for a web-service to store results remotely
-            //var myTab = browserWindow.openTab('http://127.0.0.1:4567/add/'+domain)
-            //myTab..close();
-            //myTab.addEventListener("open", tabOpenHandler, true)
-        break;
-        default:
-            alert("unhandled!");
-        break;
-    }
-}
-
-
-// wait for message from injected
-// source: https://github.com/josephschmitt/Embedinator/blob/master/Embedinator.safariextension/global.html
-/*
-safari.application.addEventListener("message", function(e) {
-    //Get references
-    curTab = e.target;
-
-    safari.extension.toolbarItems.forEach(function(item) {
-        if (item.identifier == 'jaydorsey-block-toolbar') {
-            button = item;
-        }
-    });
-
-    //Extension INIT
-    if (e.name == 'init') {
-        updateSettings({
-            autorun: safari.extension.settings.autorun,
-            showBadge: safari.extension.settings.showBadge
-        });
-
-        if (settings.showBadge) {
-            getBadgeCount();
-        }
-    }
-    else if (e.name == 'updateBadge') {
-      alert('test');
-        button.badge = e.message.count;
-    }
-},false);
-*/
-
-//alert(safari.extension.toolbarItems.count);
-/*
-safari.extension.toolbarItems.forEach(function(item) {
-    if (item.identifier == 'jaydorsey-block-toolbar') {
-        button = item;
-        button.badge = 15;
-    }
-});
-*/
-
-
-
-
-/*
-  Wait for message from injected
-*/
-//safari.application.activeBrowserWindow.activeTab.addEventListener("message", respondToMessage, false);
+alert('global loaded');
 
 </script>
