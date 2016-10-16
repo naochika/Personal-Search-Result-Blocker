@@ -237,7 +237,7 @@ function addBlockMessages() {
       this element will hold the custom css class we use to determine whether an
       element was blocked or not.
     */
-        parentList = result.parentElement.parentElement.parentElement.parentElement;
+        parentList = result.parentElement.parentElement.parentElement.parentElement.parentElement;
         blockURL = result.innerText.match(/([^/ ]+)/i)[1]; // URL to block
         // check if we've already created a "Block [site]" message, if so overwrite
         if (siteResults[i].getElementsByClassName('nubilus-block-me').length > 0) {
