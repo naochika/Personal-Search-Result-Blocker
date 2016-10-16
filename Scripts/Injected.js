@@ -295,7 +295,7 @@ function unblockContent(event) {
     // remove from local storage
     removeFromBlockList(element.getAttribute("data-source"));
     // block the result
-    var parentList = element.parentElement.parentElement.parentElement.parentElement.parentElement;
+    var parentList = element.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement;
     parentList.classList.remove("nubilus-result-blocked");
     parentList.classList.add("nubilus-result-unblocked");
     addBlockMessages();
