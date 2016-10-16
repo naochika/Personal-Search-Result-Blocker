@@ -273,7 +273,7 @@ function blockContent(element) {
     // this is triggered only by manual blocking
     if (element.constructor === MouseEvent) {
         // when our element is not an element, make it an element
-        const element = element.target;
+        element = element.target;
         // add to local storage
         addToBlockList(element.getAttribute("data-source"));
     }
@@ -291,7 +291,7 @@ function blockContent(element) {
 
 // unblocks already blocked content
 function unblockContent(event) {
-    const element = event.target;
+    element = event.target;
     // remove from local storage
     removeFromBlockList(element.getAttribute("data-source"));
     // block the result
