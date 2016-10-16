@@ -61,7 +61,8 @@ function addToBlockList(domain) {
     if (blockList.indexOf(domain) == -1) { // domain does not exist in blocklist
         blockList.push(domain);
     }
-    localStorage.setItem('blocked', JSON.stringify(blockList))
+    localStorage.setItem('blocked', JSON.stringify(blockList));
+    location.reload();
 }
 
 /*
@@ -74,6 +75,7 @@ function removeFromBlockList(domain) {
         blockList.splice(blockList.indexOf(domain), 1);
     }
     localStorage.setItem('blocked', JSON.stringify(blockList));
+    location.reload();
 }
 
 /* 
@@ -205,7 +207,7 @@ function blockSearchResults() {
         //}
         for (var i = 0; i < siteResults.length; i++) {
             resultHandle = siteResults[i];
-            result = siteResults[i].innerText.match(/([^/ ]+)/i)[1];
+            result = siteResults[i].innerText.match(/^(?:https:\/\/)?([^/ ]+)/i)[1];
             // open our blocklist up
             var blockList = JSON.parse(localStorage.getItem('blocked'));
             //var blockList = get('blocked');
@@ -238,7 +240,7 @@ function addBlockMessages() {
       element was blocked or not.
     */
         parentList = result.parentElement.parentElement.parentElement.parentElement.parentElement;
-        blockURL = result.innerText.match(/([^/ ]+)/i)[1]; // URL to block
+        blockURL = result.innerText.match(/^(?:https:\/\/)?([^/ ]+)/i)[1]; // URL to block
         // check if we've already created a "Block [site]" message, if so overwrite
         if (siteResults[i].getElementsByClassName('nubilus-block-me').length > 0) {
             blockMessage = siteResults[i].getElementsByClassName('nubilus-block-me')[0]
