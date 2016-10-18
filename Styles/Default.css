@@ -44,6 +44,7 @@ Our Default.css page:
 .nubilus-block-me:hover{
     text-decoration:underline;
     color:blue;
+    cursor:pointer;
 }
 /* box with unblock message */
 a.nubilus-block-box{
@@ -52,4 +53,8 @@ a.nubilus-block-box{
     margin-bottom:20px;
     color:blue;
     overflow:visible;
+}
+.nubilus-block-box:hover{
+    text-decoration:underline;
+    cursor:pointer;
 }
