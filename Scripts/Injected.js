@@ -62,7 +62,7 @@ function addToBlockList(domain) {
         blockList.push(domain);
     }
     localStorage.setItem('blocked', JSON.stringify(blockList));
-    location.reload();
+    //location.reload();
 }
 
 /*
@@ -75,7 +75,7 @@ function removeFromBlockList(domain) {
         blockList.splice(blockList.indexOf(domain), 1);
     }
     localStorage.setItem('blocked', JSON.stringify(blockList));
-    location.reload();
+    //location.reload();
 }
 
 /* 
