@@ -193,7 +193,7 @@ Hides the search results in our block list
 */
 function blockSearchResults() {
     // ignore the google blank page
-    if (document.URL == "http://www.google.com/blank.html"){
+    if (document.URL == "http://www.google.com/blank.html" || (document.URL.indexOf("plus.google") > -1)){
         //alert('blank');
         return;
     }
