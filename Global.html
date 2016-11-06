@@ -1,4 +1,8 @@
 <!DOCTYPE HTML>
+<html>
+<head>
+<title>Personal Search Result Blocker for Safari</title>
+</head>
 <script type="text/javascript">
 /*
 Our Global.html page:
@@ -21,120 +25,14 @@ To do:
 - Add a setting for dimming of ads and/or blocked elements rather than hiding
 
 */
-
-// number of blocked sites on the page
-var blockedSites = safari.extension.settings.blockedSites;
-
-// Register for the validate and command events.
-safari.application.addEventListener("validate", performValidate, false);
-safari.application.addEventListener("command", performCommand, false);
-safari.application.addEventListener("message", performMessage, false);
-safari.extension.settings.addEventListener("change", performSetting, false);
-
-function performValidate(event)
-{
-    // Switch based on the command of the event. You should always check the command.
-    //alert(event.command);
-    switch (event.command) {
-    case "show-messages":  // this is an example
-        // Set the badge of the target, if the target has a badge property.
-        // Some targets that send commands, like context menu items, don't have badges.
-        if ("badge" in event.target)
-            event.target.badge = unreadMessages;
-        break;
-    case "show-blocked":
-        if ("badge" in event.target)
-            event.target.badge = blockedSites;
-        break;
-    }
-}
-
-
-function performCommand(event)
-{
-    // Switch based on the command of the event. You should always check the command.
-    alert(event.command);
-    switch (event.command) {
-    case "show-messages":
-        // TODO this will only show the count which was passed.
-        // Show an alert with the number of messages.
-        //alert("You marked " + unreadMessages + " messages as read. Have a nice day!");
-        alert('test');
-        // Reset the unread messages back to 0.
-        //updateUnreadMessageCount(0);
-        break;
-    case "show-blocked":
-        alert("Badged@");
-
-        break;
-    }
-}
-
-function performMessage(message)
-{
-    //alert(event.message.count);
-    switch (message.name){
-    case "update-badge":
-        //alert('updating badge with' + message.message.count);
-        // Store the value in settings so it persists between launches.
-        alert(message.message.count);
-        safari.extension.settings.blockedSites = message.message.count;
-        /*
-        if (message.message == "add"){
-            safari.extension.settings.blockedSites = safari.extension.settings.blockedSites += 1;
-        }
-        else{
-            safari.extension.settings.blockedSites = safari.extension.settings.blockedSites -= 1;
-        }
-        */
-        // Make all the toolbar items validate to update their badge.
-        validateToolbarItems();
-        break;
-    }
-}
-
-function validateToolbarItems()
-{
-    // Iterate over all the toolbar items and tell them to validate, so their
-    // badge will be updated.
-    var toolbarItems = safari.extension.toolbarItems;
-    for (var i = 0; i < toolbarItems.length; ++i) {
-        // Skip any toolbar item that is not the messages item. You should always
-        // check the identifier, even if your extension only has one toolbar item.
-        if (toolbarItems[i].identifier !== "messages")
-            continue;
-
-        // Calling validate will dispatch a validate event, which will call
-        // performValidate for each toolbar item. This is the recommended method
-        // of updating items instead of directly setting a badge here, so multiple
-        // event listeners have a chance to validate the item.
-        toolbarItems[i].validate();
-    }
-}
-
-function performSetting(event)
-{
-    /*
+function settingChanged(event) {
     if (event.key == "resetPopup") {
         resetLocalStorage();
     }
     if (event.key == "toggleAds") {
         toggleAds();
-    }*/
-
-    switch (event.command) { // or event.key?
-    case "resetPopup":  // this is an example
-        resetLocalStorage();
-        break;
-    case "toggleAds":
-        toggleAds();
-        break;
     }
 }
-
-
-
-
 
 // reset all of our localStorage settings
 function resetLocalStorage() {
@@ -159,7 +57,6 @@ function resetLocalStorage() {
     safari.extension.settings.addEventListener("change", settingChanged, false);
 }
 
-
 function toggleAds() {
     switch (safari.extension.settings.toggleAds) {
     case true:
@@ -175,6 +72,33 @@ function remoteStorage(domain){
   //var newTab = safari.self.browserWindow.openTab();
 }
 
-alert('global loaded');
+function respondToMessage(messageEvent){
+    console.log('in response');
+    switch (messageEvent.name){
+        case "block-domain":
+            console.log("blocking domain");
+            var domain = messageEvent.message;
+            alert('blocking '+domain);
+            // this was going to be testing for a web-service to store results remotely
+            //var myTab = browserWindow.openTab('http://127.0.0.1:4567/add/'+domain)
+            //myTab..close();
+            //myTab.addEventListener("open", tabOpenHandler, true)
+        break;
+        default:
+            alert("unhandled!");
+        break;
+    }
 
+}
+
+/*
+  Wait for message from injected
+*/
+//safari.application.activeBrowserWindow.activeTab.addEventListener("message", respondToMessage, false);
+
+safari.extension.settings.addEventListener("change", settingChanged, false);
 </script>
+</head>
+<body>
+</body>
+</html>
